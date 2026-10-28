@@ -1,0 +1,170 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Gregg Drill</title>
+<style>
+:root{--bg:#f6f1e7;--fg:#2a2620;--mut:#7a7165;--card:#fffdf8;--ac:#b5402a;--ok:#3d7a4a;--ln:#ddd3c0;color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#1d1a16;--fg:#efe8da;--mut:#9a9082;--card:#27231e;--ac:#e0735b;--ok:#6fbf80;--ln:#3a352d;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#1d1a16;--fg:#efe8da;--mut:#9a9082;--card:#27231e;--ac:#e0735b;--ok:#6fbf80;--ln:#3a352d;color-scheme:dark}
+body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.5 Georgia,'Times New Roman',serif}
+main{max-width:720px;margin:0 auto;padding:20px 16px 40px}
+h1{font-size:1.5rem;margin:0}
+.sub{color:var(--mut);font-size:.9rem;margin:2px 0 16px}
+#strip{display:flex;gap:8px;overflow-x:auto;padding-bottom:6px}
+.chip{flex:none;width:64px;text-align:center;border:1px solid var(--ln);background:var(--card);border-radius:10px;padding:6px 4px 5px}
+.chip svg{height:34px;width:auto;max-width:100%;display:block;margin:0 auto}
+.chip b{display:block;font-size:.85rem}
+.chip u{display:block;height:4px;background:var(--ln);border-radius:2px;margin-top:3px;overflow:hidden;text-decoration:none}
+.chip i{display:block;height:100%;background:var(--ok)}
+.chip.lk{opacity:.3}
+#foc{color:var(--mut);font-size:.9rem;margin:10px 0}
+.bar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:10px}
+button,input{font:inherit;color:var(--fg)}
+button{background:var(--card);border:1px solid var(--ln);border-radius:8px;padding:6px 12px;cursor:pointer}
+button.on{border-color:var(--ac);color:var(--ac)}
+#card{background:var(--card);border:1px solid var(--ln);border-radius:14px;padding:28px 16px;text-align:center;min-height:200px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px}
+#card svg{color:var(--fg);overflow:visible}
+#in{width:min(320px,90%);font-size:1.4rem;text-align:center;padding:8px;border:none;border-bottom:2px solid var(--ac);background:transparent;outline:none}
+.w{font-size:2.4rem}.ph{color:var(--mut);letter-spacing:.05em}
+.row{display:flex;gap:10px}
+#msg{min-height:1.6em;margin:12px 0 0;text-align:center}
+small{display:block;color:var(--mut);margin-top:24px;font-size:.8rem}
+#pad{margin-top:12px}#cv{width:100%;height:240px;background:var(--card);border:1px solid var(--ln);border-radius:14px;touch-action:none;display:block}#pad .row{justify-content:center;margin-top:8px}.nt{text-align:left;font-size:.9rem;margin:0;padding-left:1.2rem;color:var(--mut)}.rule{font-size:.85rem;color:var(--mut)}
+</style></head><body><main>
+<h1>Gregg Drill</h1>
+<p class="sub">Strokes unlock one at a time as your accuracy on the current ones climbs.</p>
+<div id="strip"></div>
+<div id="foc"></div>
+<div class="bar"><button data-m="read">Read: outline → type word</button><button data-m="write">Write: word → pen &amp; paper</button><button id="reset" style="margin-left:auto">Reset</button></div>
+<div id="card"></div>
+<div id="pad" hidden><canvas id="cv"></canvas><div class="row"><button id="undo">Undo</button><button id="clr">Clear</button></div></div>
+<p id="msg"></p>
+<small>Outlines are one continuous pen path with circles placed by the standard rules (inside curves, outside angles, on top of straight lines; direction follows from the side). Joins between opposite curves and some blends are still approximated, so defer to your textbook where they differ. Progress is saved in this browser.</small>
+</main>
+<script>
+const ORDER='nmtdeakrlgso',INIT=6;
+const S={n:[40,0,0],m:[80,0,0],t:[35,-20,0],d:[70,-40,0],k:[50,0,12],g:[90,0,20],r:[50,0,-12],l:[90,0,-20],s:[20,-6,6],o:[16,0,14]};
+const C={a:10,e:5.5};
+const D={n:'short horizontal line',m:'long horizontal line',t:'short upward slant',d:'long upward slant',e:'small circle',a:'large circle',k:'short ⌣ curve',g:'long ⌣ curve',r:'short ⌢ curve',l:'long ⌢ curve',s:'tiny comma curve',o:'small deep hook'};
+const LEX=`need:ned meet:met mate:mat name:nam main:man mean:men team:tem tame:tam teen:ten and:and end:end meant:ment dent:dent tent:tent mend:mend tend:tend named:namd dad:dad mad:mad dam:dam tea:te me:me may:ma day:da an:an ant:ant eat:et ate:at net:net dean:den tamed:tamd teamed:temd attend:atend amend:amend
+make:mak take:tak came:kam can:kan cake:kak key:ke keen:ken decade:dekad academy:akadem
+mark:mark dark:dark dream:drem read:red tree:tre trade:trad rate:rat treat:tret tread:tred rain:ran rare:rar market:market meter:metr dare:dar reader:redr remark:remark crane:kran cream:krem creek:krek track:trak
+late:lat lead:led land:land learn:lern lend:lend lent:lent lean:len alarm:alarm label:label elder:eldr ladder:ladr glad:glad clean:klen clear:kler real:rel deal:del mail:mal tale:tal trail:tral meal:mel metal:metal dental:dental tackle:takl elect:elekt
+gate:gat game:gam again:agan grade:grad great:grat green:gren grand:grand grant:grant garden:garden drag:drag target:target garment:garment grammar:gramar gregg:greg gear:ger eager:egr dagger:dagr legal:legal
+see:se sad:sad same:sam seem:sem sale:sal sent:sent send:send said:sed sand:sand dance:dans mess:mes needs:neds makes:maks means:mens rates:rats street:stret stand:stand steam:stem stream:strem scale:skal smart:smart smell:smel stale:stal state:stat start:start seal:sel less:les class:klas glass:glas dress:dres address:adres estate:estat
+no:no note:not more:mor door:dor road:rod load:lod told:told gold:gold old:old owner:onr slow:slo snow:sno stone:ston close:klos alone:alon most:most moment:moment total:total toast:tost roll:rol goal:gol go:go so:so low:lo dome:dom tone:ton store:stor stolen:stolen lonely:lonle rose:ros motor:motr remote:remot meadow:medo model:model sold:sold solo:solo also:also coast:kost cold:kold color:kolr grow:gro drone:dron`
+.split(/\s+/).map(x=>{const[w,t]=x.split(':');return{w,t}});
+
+const isS=(a,i)=>i>=0&&i<a.length&&!!S[a[i]];
+function plan(t){
+ const a=[...t],dr=a.map(c=>{const s=S[c];if(!s)return null;const l=Math.hypot(s[0],s[1]);return[s[0]/l,s[1]/l]});
+ const cv=i=>isS(a,i)&&S[a[i]][2]!==0;
+ return a.map((c,i)=>{
+  if(S[c])return null;
+  let side=1,where='on top of the line';
+  const p=isS(a,i-1)?i-1:-1,n=isS(a,i+1)?i+1:-1,j=cv(n)?n:cv(p)?p:-1;
+  if(j>=0){side=S[a[j]][2]>0?1:-1;where='inside the “'+a[j]+'” curve'}
+  else if(p>=0&&n>=0){const u=dr[p],v=dr[n],x=u[0]*v[1]-u[1]*v[0];if(Math.abs(x)>.25){side=x>0?1:-1;where='outside the angle'}}
+  const w=[0,0];[p,n].forEach(q=>{if(q>=0){w[0]+=dr[q][0];w[1]+=dr[q][1]}});
+  const l=Math.hypot(w[0],w[1]);
+  return{c,side,where,u:l?[w[0]/l,w[1]/l]:[1,0],rot:side>0?'counterclockwise ↺':'clockwise ↻'};
+ });
+}
+const note=t=>plan(t).filter(Boolean).map(q=>`<li><b>${q.c}</b> (${D[q.c]}): ${q.where}, ${q.rot}</li>`).join('');
+function outline(t,k){
+ const a=[...t],pl=plan(t);let x=0,y=0,d='M0 0',P=[[0,0]];
+ a.forEach((c,i)=>{
+  const s=S[c];
+  if(s){const[dx,dy,b]=s,l=Math.hypot(dx,dy),ux=dx/l,uy=dy/l;
+   d+=`Q${x+dx/2-uy*b*2} ${y+dy/2+ux*b*2} ${x+dx} ${y+dy}`;
+   P.push([x+dx/2-uy*b,y+dy/2+ux*b],[x+dx,y+dy]);x+=dx;y+=dy;
+  }else{
+   const q=pl[i],r=C[c],nx=q.u[1]*q.side,ny=-q.u[0]*q.side,sw=q.side>0?0:1;
+   d+=`A${r} ${r} 0 0 ${sw} ${x+2*r*nx} ${y+2*r*ny}A${r} ${r} 0 0 ${sw} ${x} ${y}`;
+   P.push([x+r*nx-r,y+r*ny-r],[x+r*nx+r,y+r*ny+r]);
+  }
+ });
+ const xs=P.map(p=>p[0]),ys=P.map(p=>p[1]);
+ const x0=Math.min(...xs)-5,y0=Math.min(...ys)-5,w=Math.max(...xs)-x0+5,h=Math.max(...ys)-y0+5;
+ return `<svg viewBox="${x0} ${y0} ${w} ${h}" style="width:${w*k}px;max-width:100%" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="${d}"/><circle cx="0" cy="0" r="2" fill="currentColor" stroke="none"/></svg>`;
+}
+
+let st={u:INIT,s:{}};
+try{st=JSON.parse(localStorage.getItem('gg'))||st}catch(e){}
+const save=()=>{try{localStorage.setItem('gg',JSON.stringify(st))}catch(e){}};
+const $=id=>document.getElementById(id);
+const un=()=>ORDER.slice(0,st.u);
+const em=c=>(st.s[c]||{e:0}).e;
+let mode='read',cur=null,last='',shown=false,wait=false,msg='';
+
+function focusUnit(){return[...un()].sort((a,b)=>em(a)-em(b)||ORDER.indexOf(b)-ORDER.indexOf(a))[0]}
+function pick(){
+ const U=un(),pool=LEX.filter(x=>[...x.t].every(c=>U.includes(c))&&x.w!==last);
+ const f=pool.filter(x=>x.t.includes(focusUnit()));
+ const src=Math.random()<.7&&f.length?f:pool;
+ return src[Math.floor(Math.random()*src.length)];
+}
+function next(){strokes=[];last=cur?cur.w:'';cur=pick();wait=false;shown=false;draw()}
+function grade(ok){
+ const ans=LEX.filter(x=>x.t===cur.t).map(x=>x.w);
+ new Set(cur.t).forEach(c=>{const s=st.s[c]||(st.s[c]={e:0,n:0});s.e+=.2*(ok-s.e);s.n++});
+ msg=ok?'✓ '+ans.join(' / '):'✗ It was '+ans.join(' / ')+' ('+[...cur.t].join(' · ')+')';
+ if(st.u<ORDER.length&&[...un()].every(c=>st.s[c]&&st.s[c].n>=6&&st.s[c].e>=.85)){
+  const c=ORDER[st.u++];msg+=`  —  new stroke unlocked: “${c}”, ${D[c]}`;
+ }
+ save();
+ if(!ok&&mode==='read'){wait=true;draw()}else next();
+}
+function draw(){
+ $('strip').innerHTML=[...ORDER].map((c,i)=>`<div class="chip${i>=st.u?' lk':''}" title="${D[c]}">${outline(c,1.1)}<b>${c}</b><u><i style="width:${em(c)*100}%"></i></u></div>`).join('');
+ const f=focusUnit();
+ $('foc').textContent=`Focus: “${f}” (${D[f]})  ·  ${st.u}/${ORDER.length} strokes unlocked`;
+ document.querySelectorAll('[data-m]').forEach(b=>b.classList.toggle('on',b.dataset.m===mode));
+ let h;
+ if(mode==='read')h=outline(cur.t,2.6)+(wait?`<ul class="nt">${note(cur.t)}</ul>`:'')+`<input id="in" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="type the English word, Enter to give up" ${wait?'disabled':''}>`;
+ else h=`<div class="w">${cur.w}</div><div class="ph">${[...cur.t].join(' · ')}</div><div class="rule">Circles go inside curves, outside angles, on top of straight lines. The dot marks where the pen starts.</div>`+(shown?outline(cur.t,2.6)+`<ul class="nt">${note(cur.t)}</ul><div class="row"><button data-g="0">Missed (n)</button><button data-g="1">Got it (y)</button></div>`:`<button id="rv">Reveal outline (Space)</button>`);
+ $('card').innerHTML=h;$('pad').hidden=mode!=='write';if(mode==='write')fit();
+ $('msg').textContent=msg;
+ const i=$('in');if(i&&!wait)i.focus();
+}
+document.addEventListener('input',e=>{
+ if(mode!=='read'||wait||e.target.id!=='in')return;
+ const v=e.target.value.trim().toLowerCase();
+ if(LEX.some(x=>x.t===cur.t&&x.w===v))grade(true);
+});
+document.addEventListener('keydown',e=>{
+ if(mode==='write'){
+  if(!shown&&(e.key==='Enter'||e.key===' ')){e.preventDefault();shown=true;draw()}
+  else if(shown&&(e.key==='y'||e.key==='n'))grade(e.key==='y');
+ }else if(e.key==='Enter'){
+  if(wait)next();
+  else if($('in')&&$('in').value.trim())grade(false);
+ }
+});
+document.addEventListener('click',e=>{
+ const t=e.target.closest('button');if(!t)return;
+ if(t.dataset.m){mode=t.dataset.m;msg='';next()}
+ else if(t.dataset.g!==undefined)grade(t.dataset.g==='1');
+ else if(t.id==='undo'){strokes.pop();redraw()}else if(t.id==='clr'){strokes=[];redraw()}else if(t.id==='rv'){shown=true;draw()}
+ else if(t.id==='reset'){st={u:INIT,s:{}};save();msg='Progress reset.';next()}
+});
+const cv=$('cv'),cx=cv.getContext('2d');let strokes=[],pen=null;
+function redraw(){
+ const dp=cv.width/(cv.clientWidth||1),g=getComputedStyle(document.documentElement);
+ cx.clearRect(0,0,cv.width,cv.height);cx.lineCap=cx.lineJoin='round';
+ cx.strokeStyle=g.getPropertyValue('--ln');cx.lineWidth=dp;cx.beginPath();cx.moveTo(0,cv.height*.6);cx.lineTo(cv.width,cv.height*.6);cx.stroke();
+ cx.strokeStyle=g.getPropertyValue('--fg');cx.lineWidth=2.6*dp;
+ strokes.forEach(s=>{cx.beginPath();s.forEach((q,i)=>i?cx.lineTo(q[0]*dp,q[1]*dp):cx.moveTo(q[0]*dp,q[1]*dp));if(s.length==1)cx.lineTo(s[0][0]*dp+.1,s[0][1]*dp);cx.stroke()});
+}
+function fit(){
+ const dp=window.devicePixelRatio||1,w=Math.round(cv.clientWidth*dp),h=Math.round(cv.clientHeight*dp);
+ if(!w)return;if(cv.width!==w||cv.height!==h){cv.width=w;cv.height=h}redraw();
+}
+const pt=e=>{const r=cv.getBoundingClientRect();return[e.clientX-r.left,e.clientY-r.top]};
+cv.onpointerdown=e=>{e.preventDefault();cv.setPointerCapture(e.pointerId);pen=[pt(e)];strokes.push(pen);redraw()};
+cv.onpointermove=e=>{if(pen){pen.push(pt(e));redraw()}};
+cv.onpointerup=cv.onpointercancel=()=>{pen=null};
+addEventListener('resize',fit);
+
+next();
+</script></body></html>

@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <meta name="description" content="A quiet, offline trainer for Gregg shorthand. Learn a few strokes, then read and write real words.">
+    <meta name="theme-color" content="#FBFAF7">
+    <meta name="color-scheme" content="light dark">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; font-src 'self'; connect-src 'self'; manifest-src 'self'; worker-src 'self'; object-src 'none'; base-uri 'none'; form-action 'self'">
+    <title>Dregg</title>
+    <link rel="manifest" href="./manifest.webmanifest">
+    <link rel="icon" href="./icons/icon-192.png" sizes="192x192" type="image/png">
+    <link rel="apple-touch-icon" href="./icons/icon-192.png">
+    <link rel="stylesheet" href="./css/tokens.css">
+    <link rel="stylesheet" href="./css/base.css">
+    <link rel="stylesheet" href="./css/app.css">
+    <link rel="stylesheet" href="./css/practice.css">
+  </head>
+  <body>
+    <div class="app" id="app">
+      <aside class="sidebar">
+        <a class="brand" href="#/today">Dregg</a>
+        <nav class="nav" aria-label="Primary">
+          <a href="#/today" data-nav="today">Today</a>
+          <a href="#/practice" data-nav="practice">Practice</a>
+          <a href="#/chart" data-nav="chart">Chart</a>
+          <a href="#/explorer" data-nav="explorer">Explorer</a>
+          <a href="#/progress" data-nav="progress">Progress</a>
+          <a href="#/settings" data-nav="settings">Settings</a>
+        </nav>
+        <p class="offline-status" id="offline-status">Starting</p>
+      </aside>
+      <main class="main" id="screen"></main>
+      <nav class="tabbar" aria-label="Primary">
+        <a href="#/today" data-nav="today">Today</a>
+        <a href="#/practice" data-nav="practice">Practice</a>
+        <a href="#/chart" data-nav="chart">Chart</a>
+        <a href="#/progress" data-nav="progress">Progress</a>
+        <a href="#/settings" data-nav="settings">More</a>
+      </nav>
+    </div>
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+    <noscript>Dregg needs JavaScript. Nothing is sent anywhere.</noscript>
+    <script type="module" src="./js/main.js"></script>
+  </body>
+</html>
