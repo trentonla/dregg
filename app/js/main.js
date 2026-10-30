@@ -82,6 +82,10 @@ function render() {
     "is-session",
     state.route === "practice" && Boolean(state.session) && !state.session.finished && state.session.items.length > 0,
   );
+  document.body.classList.toggle(
+    "is-session",
+    state.route === "practice" && Boolean(state.session) && !state.session.finished && state.session.items.length > 0,
+  );
   applyTheme(state.settings.theme);
   document.title = `${TITLES[state.route] || "Dregg"} — Dregg`;
   renderNav(state.route);

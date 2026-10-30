@@ -57,6 +57,39 @@ function noteFor(item, outline) {
   return [units, contraction || placement].filter(Boolean).join(". ");
 }
 
+function strokesSvg(strokes, { className = "outline", label = "Your outline" } = {}) {
+  const points = strokes.flat();
+  if (!points.length) return `<p class="muted marking-empty">No drawing yet.</p>`;
+  const pad = 10;
+  const xs = points.map((point) => point.x);
+  const ys = points.map((point) => point.y);
+  const minX = Math.min(...xs) - pad;
+  const minY = Math.min(...ys) - pad;
+  const width = Math.max(Math.max(...xs) + pad - minX, 1);
+  const height = Math.max(Math.max(...ys) + pad - minY, 1);
+  const d = strokes
+    .map((stroke) => {
+      const [first, ...rest] = stroke;
+      if (!first) return "";
+      const line = rest.map((point) => ` L${point.x.toFixed(1)} ${point.y.toFixed(1)}`).join("");
+      return `M${first.x.toFixed(1)} ${first.y.toFixed(1)}${line}${stroke.length === 1 ? " l0.1 0" : ""}`;
+    })
+    .join(" ");
+  return `<svg class="${className}" viewBox="${minX.toFixed(1)} ${minY.toFixed(1)} ${width.toFixed(1)} ${height.toFixed(1)}" role="img" aria-label="${label}" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="${d}"/></svg>`;
+}
+
+function comparisonHtml(item, outline, blends) {
+  const model = outlineSvg(outlineForWord(item.word, item.track, { blends }), {
+    className: "outline",
+    label: "Model outline",
+    viewBox: referenceViewBox(outline),
+  });
+  return `<div class="marking-grid">
+    <figure class="marking-panel"><figcaption>Your outline</figcaption><div class="marking-art">${strokesSvg(view.strokes)}</div></figure>
+    <figure class="marking-panel"><figcaption>Model</figcaption><div class="marking-art" data-reference>${model}</div></figure>
+  </div>`;
+}
+
 function promptHtml(item, outline, sound, blends) {
   if (item.mode === "read") {
     return `<div class="stage stage--read">
@@ -69,8 +102,7 @@ function promptHtml(item, outline, sound, blends) {
       <p class="word-display">${escapeHtml(item.word.w)}</p>
       ${phonemes(item.word)}
       ${sound ? `<button class="btn btn--ghost btn--small" data-speak>Hear it</button>` : ""}
-      <p class="muted">Write the outline on paper or below.</p>
-      ${view.revealed ? `<div class="reference-outline" data-reference>${outlineSvg(outlineForWord(item.word, item.track, { blends }), { className: "outline outline--large", label: "Reference outline", viewBox: referenceViewBox(outline) })}</div>` : ""}
+      <p class="muted">${view.revealed ? "Compare your drawing with the model below." : "Write the outline on paper or below."}</p>
     </div>`;
   }
   if (item.mode === "trace") {
@@ -93,7 +125,7 @@ function promptHtml(item, outline, sound, blends) {
   return "";
 }
 
-function answerHtml(item) {
+function answerHtml(item, outline, blends) {
   if (item.mode === "read") {
     return `<form class="answer answer--read" data-read-form>
       <label class="sr-only" for="read-answer">Your answer</label>
@@ -102,6 +134,13 @@ function answerHtml(item) {
     </form>`;
   }
   if (item.mode === "write") {
+    if (view.revealed) {
+      return `<div class="answer answer--marking">
+        ${comparisonHtml(item, outline, blends)}
+        <p class="muted">Compare your outline with the model.</p>
+        <div class="button-row"><button class="btn btn--primary" data-grade="yes">I wrote it</button><button class="btn btn--secondary" data-grade="no">Not yet</button></div>
+      </div>`;
+    }
     return `<div class="answer answer--write">
       <div class="canvas-wrap">
         <div class="canvas-host"></div>
@@ -109,17 +148,9 @@ function answerHtml(item) {
       <div class="canvas-tools">
         <button class="btn btn--ghost" data-undo>Undo</button>
         <button class="btn btn--ghost" data-clear>Clear</button>
-        ${
-          view.revealed
-            ? `<button class="btn btn--ghost" data-show>Show me</button>`
-            : `<button class="btn btn--secondary" data-reveal>Reveal outline</button>`
-        }
+        <button class="btn btn--secondary" data-reveal>Reveal outline</button>
       </div>
-      ${
-        view.revealed
-          ? `<div class="self-grade"><p class="muted">Compare your outline with the model.</p><div class="button-row"><button class="btn btn--primary" data-grade="yes">I wrote it</button><button class="btn btn--secondary" data-grade="no">Not yet</button></div></div>`
-          : `<p class="muted">Draw the whole outline, then reveal to compare.</p>`
-      }
+      <p class="muted">Draw the whole outline, then reveal to compare.</p>
     </div>`;
   }
   if (item.mode === "trace") {
@@ -185,7 +216,7 @@ function feedbackHtml(item, outline, total, blends) {
       <p class="feedback-title">${correct ? "Correct." : "Not quite."}</p>
       <p class="feedback-word">${escapeHtml(item.word.w)}</p>
       ${phonemes(item.word)}
-      <div class="feedback-outline">${outlineSvg(outlineForWord(item.word, item.track, { blends }), { className: "outline outline--large", label: item.word.w, viewBox: referenceViewBox(outline) })}</div>
+      ${item.mode === "write" ? comparisonHtml(item, outline, blends) : `<div class="feedback-outline">${outlineSvg(outlineForWord(item.word, item.track, { blends }), { className: "outline outline--large", label: item.word.w, viewBox: referenceViewBox(outline) })}</div>`}
       ${breakdown(item.units, item.track)}
       <p class="feedback-note">${escapeHtml(noteFor(item, outline))}</p>
       ${
@@ -252,6 +283,9 @@ export function renderPractice(root, store) {
     session = state.session;
   }
   root.classList?.toggle("is-session", Boolean(session && !session.finished && session.items.length));
+  if (typeof document !== "undefined") {
+    document.body?.classList.toggle("is-session", Boolean(session && !session.finished && session.items.length));
+  }
   if (!session || !session.items.length) {
     root.innerHTML = `<section class="practice"><div class="empty"><h2>No session yet.</h2><p>Start a short session from Today.</p><a class="btn btn--primary" href="#/today">Go to Today</a></div></section>`;
     return;
@@ -288,7 +322,7 @@ export function renderPractice(root, store) {
         : `<div class="practice-utility">${strokeReferenceHtml(state)}<button class="btn btn--ghost btn--small" data-giveup>Give up</button></div>`
     }
     ${promptHtml(item, outline, state.settings.sound, blends)}
-    ${answered ? feedbackHtml(item, outline, session.items.length, blends) : answerHtml(item)}
+    ${answered ? feedbackHtml(item, outline, session.items.length, blends) : answerHtml(item, outline, blends)}
   </section>`;
 
   const host = root.querySelector(".canvas-host");

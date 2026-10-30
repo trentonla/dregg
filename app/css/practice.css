@@ -80,18 +80,46 @@
   text-transform: uppercase;
 }
 
-.reference-outline {
-  width: min(100%, 420px);
-  min-height: 120px;
-  padding: var(--space-3);
+.answer--marking .button-row {
+  align-items: start;
+}
+
+.marking-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-2);
+  width: 100%;
+}
+
+.marking-panel {
+  display: grid;
+  gap: 4px;
+  margin: 0;
+}
+
+.marking-panel figcaption {
+  font-size: var(--text-xs);
+  color: var(--muted);
+}
+
+.marking-art {
+  display: grid;
+  place-items: center;
+  height: 150px;
+  padding: var(--space-2);
   border: 1px solid var(--line);
-  border-radius: var(--radius);
+  border-radius: var(--radius-sm);
   background: var(--surface);
 }
 
-.reference-outline .outline {
+.marking-art .outline {
   width: 100%;
-  height: 160px;
+  height: 100%;
+}
+
+.marking-empty {
+  place-self: center;
+  text-align: center;
 }
 
 .drill-result {
@@ -214,11 +242,6 @@
 
 .canvas-tools .btn--primary {
   margin-left: auto;
-}
-
-.self-grade {
-  display: grid;
-  gap: var(--space-2);
 }
 
 .feedback {
@@ -351,6 +374,10 @@
 }
 
 @media (max-width: 899px) {
+  body.is-session {
+    overflow: hidden;
+  }
+
   .is-practice .tabbar {
     display: none;
   }
@@ -360,7 +387,9 @@
   }
 
   .is-practice .main.is-session {
-    height: 100dvh;
+    position: fixed;
+    inset: 0;
+    height: auto;
     padding: calc(var(--space-2) + env(safe-area-inset-top)) var(--space-4)
       calc(var(--space-2) + env(safe-area-inset-bottom));
     overflow: hidden;
@@ -389,7 +418,11 @@
   }
 
   .practice--session.is-typing .outline-stage .outline {
-    height: min(26dvh, 210px);
+    height: min(20dvh, 150px);
+  }
+
+  .practice--session.is-typing .stage--read .muted {
+    display: none;
   }
 
   .practice--session .stroke-reference-body {
@@ -449,6 +482,13 @@
 
   .practice--session .answer--write .canvas-tools {
     flex: none;
+  }
+
+  .practice--session .answer--marking {
+    flex: 1 1 auto;
+    min-height: 0;
+    align-content: start;
+    overflow-y: auto;
   }
 
   .practice--session .feedback {
