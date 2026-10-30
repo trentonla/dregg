@@ -492,6 +492,48 @@
   color: var(--faint);
 }
 
+.phase-list {
+  display: grid;
+  gap: var(--space-3);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.phase-row {
+  display: grid;
+  gap: var(--space-1);
+  padding-left: var(--space-3);
+  border-left: 2px solid var(--line);
+}
+
+.phase-row.is-current {
+  border-left-color: var(--accent);
+}
+
+.phase-row.is-locked {
+  opacity: 0.55;
+}
+
+.phase-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--space-2);
+}
+
+.phase-head h3 {
+  font-size: var(--text-body);
+}
+
+.phase-row .chip-row {
+  margin-top: 0;
+}
+
+.phase-row .chip.is-locked {
+  opacity: 0.45;
+}
+
 .volume-figure {
   display: grid;
   gap: var(--space-1);

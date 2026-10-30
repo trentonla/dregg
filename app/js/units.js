@@ -448,7 +448,6 @@ export const PHASES = phases.map((ids, index) => ({
     "Precision I — long vowels",
     "Precision II — broad/short vowels",
     "Fluency",
-    "Brief forms (post-v1)",
   ][index],
   units: ids,
 }));

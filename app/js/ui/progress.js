@@ -1,8 +1,52 @@
-// Progress: mastery grid, recent volume, session history, backup.
-import { escapeHtml, pageHeader, percent, progressBar, unitGlyph } from "./components.js";
+// Progress: mastery grid, curriculum stages, recent volume, session history, backup.
+import { activePhases } from "../curriculum.js";
+import { isUnitUnlocked } from "../engine.js";
+import { escapeHtml, pageHeader, percent, progressBar, unitGlyph, unitLabel } from "./components.js";
 import { backupHtml, wireBackup } from "./backup.js";
 
 const view = { sort: "weak" };
+
+// What each phase adds, in the order the app teaches it.
+const STAGE_NOTES = {
+  1: "Short/long pairs n–m and t–d, plus the plain a and e vowel circles.",
+  2: "The k and g arches, the l and r curves, and the plain o hook.",
+  3: "The s curve in its left and right join forms, h as a dot, and the plain u hook.",
+  4: "p/b and f/v: short/long downward curves for the lip and teeth sounds.",
+  5: "ch and j (short/long down-left strokes), plus sh and th.",
+  6: "ng and nk strokes, and the w and y glides.",
+  7: "ai, ow, oi and yu: two vowel sounds written as one stroke.",
+  8: "Long-vowel signs (tick below) for a, e, o, u — ale, eat, old, food.",
+  9: "Broad/short-vowel signs (dot below) — art, bet, all, book.",
+  10: "Blends: two strokes written as one, such as ten/den, tem/dem, pent/gent.",
+};
+
+function stageList(state) {
+  const phases = activePhases(state.track).map((phase) => {
+    const unlocked = new Set(phase.units.filter((id) => isUnitUnlocked(state.progress, id, state.track)));
+    return { ...phase, unlocked, complete: unlocked.size === phase.units.length };
+  });
+  const current = phases.find((phase) => !phase.complete)?.number ?? null;
+  return `<ol class="phase-list">${phases
+    .map((phase) => {
+      const status = phase.complete ? "done" : phase.number === current ? "current" : "locked";
+      return `<li class="phase-row is-${status}">
+        <div class="phase-head">
+          <span class="mono">Phase ${phase.number}</span>
+          <h3>${escapeHtml(phase.name)}</h3>
+          ${status === "current" ? `<span class="badge">Current</span>` : ""}
+          ${status === "done" ? `<span class="badge badge--ok">Done</span>` : ""}
+        </div>
+        <p class="muted">${escapeHtml(STAGE_NOTES[phase.number] || "")}</p>
+        <div class="chip-row">${phase.units
+          .map(
+            (id) =>
+              `<span class="chip${phase.unlocked.has(id) ? "" : " is-locked"}">${escapeHtml(unitLabel(id))}</span>`,
+          )
+          .join("")}</div>
+      </li>`;
+    })
+    .join("")}</ol>`;
+}
 
 function dayKey(date) {
   return new Date(date).toISOString().slice(0, 10);
@@ -99,6 +143,12 @@ export function renderProgress(root, store) {
           </button>`,
         )
         .join("")}</div>
+    </section>
+
+    <section class="module">
+      <div class="module-head"><h2>Stages</h2><span class="mono">${activePhases(state.track).length} phases</span></div>
+      <p class="muted">Strokes unlock a phase at a time, in this order. A phase opens when the ones before it are mastered.${state.track === "core" ? " Core skips the two Precision vowel phases; switch tracks in Settings to see them." : ""}</p>
+      ${stageList(state)}
     </section>
 
     <section class="module">
