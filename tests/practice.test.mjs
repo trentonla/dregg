@@ -35,7 +35,7 @@ function setup(seed = 11) {
   const session = createSession({
     progress,
     track: "core",
-    settings: { sessionLength: 12, modeMix: "mixed" },
+    settings: { sessionLength: 12, modes: ["read", "write", "trace", "drill"] },
     seed,
   });
   const state = { session, settings: { sound: false }, progress, track: "core" };
@@ -89,7 +89,7 @@ test("drill feedback names the stroke instead of the word", () => {
 test("opening practice with no session starts one quietly", () => {
   const progress = structuredClone(DEFAULT_PROGRESS);
   ensureProgress(progress, "core");
-  const state = { session: null, settings: { sessionLength: 12, modeMix: "mixed", sound: false }, progress, track: "core" };
+  const state = { session: null, settings: { sessionLength: 12, modes: ["read", "write", "trace", "drill"], sound: false }, progress, track: "core" };
   let ensured = 0;
   const store = {
     getState: () => state,

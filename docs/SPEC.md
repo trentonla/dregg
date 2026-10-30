@@ -540,7 +540,7 @@ No account, no email, no permissions.
 
 - Vowel display: Core / Precision (Precision becomes available after the precision phase unlocks).
 - Hide learned strokes (default off), also toggleable during Practice.
-- Session length and mode mix.
+- Session length, and which question types (read, write, trace, drill) are in rotation.
 - Sound on/off (dictation only).
 - Theme: system/light/dark.
 - Haptics (mobile, optional).

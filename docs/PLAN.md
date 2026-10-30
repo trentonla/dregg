@@ -385,7 +385,7 @@ UI (screens) ──> store ──> engine ──> curriculum + lexicon
 interface AppState {
   route: "onboarding" | "today" | "practice" | "chart" | "explorer" | "progress" | "settings";
   track: "core" | "precision";
-  settings: { sessionLength: number; modeMix: "read" | "write" | "mixed"; sound: boolean; theme: ... };
+  settings: { sessionLength: number; modes: ("read" | "write" | "trace" | "drill")[]; sound: boolean; theme: ... };
   progress: Progress;
   session: SessionState | null;
   toast: Toast | null;

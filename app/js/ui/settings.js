@@ -53,8 +53,16 @@ export function renderSettings(root, store) {
 
     <section class="module">
       <div class="module-head"><h2>Practice</h2></div>
-      ${select("sessionLength", "Session length", "Items per session.", settings.sessionLength, [[10, "10 items"], [15, "15 items"], [20, "20 items"], [30, "30 items"]])}
-      ${segmented("modeMix", "Mode mix", "Read is the easiest on a keyboard; mixed adds writing, tracing, and drills.", settings.modeMix, [["read", "Mostly read"], ["mixed", "Mixed"], ["write", "Mostly write"]])}
+      ${select("sessionLength", "Session length", "Items per session. Zen mode ignores this.", settings.sessionLength, [[10, "10 items"], [15, "15 items"], [20, "20 items"], [30, "30 items"]])}
+      ${[
+        ["read", "Read", "Type the word from the outline."],
+        ["write", "Write", "Draw the outline for a word."],
+        ["trace", "Trace", "Trace the model outline."],
+        ["drill", "Drill", "Pick the stroke that matches a description."],
+      ]
+        .map(([id, label, hint]) => toggle(`mode-${id}`, label, hint, settings.modes.includes(id)))
+        .join("")}
+      <p class="muted">Sessions cycle through the enabled types. At least one stays on.</p>
       ${toggle("sound", "Sound", "On-device speech for dictation, when the browser has a voice.", settings.sound)}
       ${toggle("haptics", "Haptics", "Short vibration on check, where supported.", settings.haptics)}
     </section>
@@ -93,8 +101,16 @@ export function renderSettings(root, store) {
     for (const radio of root.querySelectorAll('input[name="theme"]')) {
       radio.addEventListener("change", () => store.setSettings({ theme: radio.value }));
     }
-    for (const radio of root.querySelectorAll('input[name="modeMix"]')) {
-      radio.addEventListener("change", () => store.setSettings({ modeMix: radio.value }));
+    for (const input of root.querySelectorAll('input[name^="mode-"]')) {
+      input.addEventListener("change", () => {
+        const modes = [...root.querySelectorAll('input[name^="mode-"]:checked')].map((checked) => checked.name.slice(5));
+        // Never leave the learner with no question type.
+        if (!modes.length) {
+          input.checked = true;
+          return;
+        }
+        store.setSettings({ modes });
+      });
     }
     for (const input of root.querySelectorAll('input[type="checkbox"][name="sound"], input[type="checkbox"][name="haptics"]')) {
       input.addEventListener("change", () => store.setSettings({ [input.name]: input.checked }));

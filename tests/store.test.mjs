@@ -36,3 +36,14 @@ test("ensureSession starts a session without navigating or notifying", () => {
   assert.equal(emits, 0, "nothing is emitted");
   assert.equal(store.ensureSession(), session, "the same session is reused");
 });
+
+test("zen sessions keep going past the first batch", () => {
+  const store = newStore();
+  const session = store.startSession({ zen: true });
+  assert.equal(session.zen, true);
+  session.index = session.items.length - 1;
+  const before = session.items.length;
+  store.next();
+  assert.ok(session.items.length > before, "more items are queued");
+  assert.equal(session.index, before);
+});

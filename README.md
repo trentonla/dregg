@@ -33,7 +33,7 @@ Home Screen, then enable Airplane Mode. See [`docs/OFFLINE-IOS.md`](docs/OFFLINE
 - **Chart** — the full inventory, grouped by family and direction, with locked strokes visible.
 - **Explorer** — audited lexicon first, spelling heuristic second, clearly marked unverified.
 - **Progress** — per-unit mastery grid, 14-day volume, session history, export/import/reset.
-- **Settings** — Core/Precision track, session length, mode mix, theme, sound, haptics, storage and
+- **Settings** — Core/Precision track, session length, question types, theme, sound, haptics, storage and
   offline status, backup, credits.
 - **PWA** — manifest, icons, service worker, strict CSP, cache-first offline shell.
 - **Storage** — versioned `localStorage`, migration from v1, export/import validation, reset.

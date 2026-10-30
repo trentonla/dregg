@@ -283,7 +283,7 @@ function summaryHtml(summary, state) {
   const unlocked = summary.unlocked ? UNIT_BY_ID[summary.unlocked] : null;
   return `<section class="practice practice--summary">
     <header class="page-head">
-      <p class="eyebrow">${summary.track === "precision" ? "Precision" : "Core"} session</p>
+      <p class="eyebrow">${summary.zen ? "Zen session" : summary.track === "precision" ? "Precision" : "Core"} session</p>
       <h1>Session complete.</h1>
       <p class="lead">${escapeHtml(recommendation(summary, state.progress, summary.track))}</p>
     </header>
@@ -339,12 +339,13 @@ export function renderPractice(root, store) {
   const blends = new Set(session.blends || []);
   const outline = outlineForWord(item.word, item.track, { blends });
   const answered = Boolean(view.feedback);
+  const position = session.zen ? `Zen ${session.results.length + 1}` : `${session.index + 1} / ${session.items.length}`;
 
   root.innerHTML = `<section class="practice practice--session">
     <div class="practice-top">
       <button class="btn btn--ghost" data-exit>Exit</button>
-      <span class="practice-meta mono">${modeLabel(item.mode)} · ${session.index + 1} / ${session.items.length}</span>
-      ${progressBar(session.results.length, session.items.length, "Session progress")}
+      <span class="practice-meta mono">${modeLabel(item.mode)} · ${position}</span>
+      ${session.zen ? "" : progressBar(session.results.length, session.items.length, "Session progress")}
     </div>
     ${
       answered
@@ -352,7 +353,7 @@ export function renderPractice(root, store) {
         : `<div class="practice-utility">${strokeReferenceHtml(state)}<button class="btn btn--ghost btn--small" data-giveup>Give up</button></div>`
     }
     ${promptHtml(item, outline, state.settings.sound, blends)}
-    ${answered ? feedbackHtml(item, outline, session.items.length, blends) : answerHtml(item, outline, blends)}
+    ${answered ? feedbackHtml(item, outline, session.zen ? Infinity : session.items.length, blends) : answerHtml(item, outline, blends)}
   </section>`;
 
   const host = root.querySelector(".canvas-host");

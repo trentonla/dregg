@@ -5,6 +5,7 @@ import {
   ensureProgress,
   eligibleWords,
   createSession,
+  extendSession,
   recordResult,
   finishSession,
   unlockReady,
@@ -147,7 +148,7 @@ test("a weak session does not unlock", () => {
 
 test("practice never draws a locked stroke", () => {
   const progress = fresh();
-  const session = createSession({ progress, track: "core", settings: { sessionLength: 12, modeMix: "mixed" }, seed: 11 });
+  const session = createSession({ progress, track: "core", settings: { sessionLength: 12, modes: ["read", "write", "trace", "drill"] }, seed: 11 });
   for (const item of session.items) {
     for (const id of item.units) assert.ok(isUnitUnlocked(progress, id, "core"), `${item.mode} drew locked ${id}`);
     if (item.drill) assert.ok(isUnitUnlocked(progress, item.drill.answer, "core"));
@@ -176,7 +177,7 @@ test("a blend word stays practiceable before its blend is taught", () => {
   const progress = fresh();
   const words = eligibleWords(progress, LEXICON, "core").map((word) => word.w);
   assert.ok(words.includes("madame"), "madame is eligible with separate strokes");
-  const session = createSession({ progress, track: "core", settings: { sessionLength: 8, modeMix: "read" }, seed: 3 });
+  const session = createSession({ progress, track: "core", settings: { sessionLength: 8, modes: ["read"] }, seed: 3 });
   assert.deepEqual(session.blends, []);
   for (const item of session.items) {
     for (const id of item.units) assert.ok(!id.startsWith("blend-"), `drew locked ${id}`);
@@ -192,10 +193,28 @@ test("sessions remember which blends are unlocked", () => {
 
 test("drill results record the stroke, not the word", () => {
   const progress = fresh();
-  const session = createSession({ progress, track: "core", settings: { sessionLength: 12, modeMix: "mixed" }, seed: 11 });
+  const session = createSession({ progress, track: "core", settings: { sessionLength: 12, modes: ["read", "write", "trace", "drill"] }, seed: 11 });
   const index = session.items.findIndex((item) => item.mode === "drill");
   assert.ok(index >= 0);
   session.index = index;
   const entry = recordResult(progress, session, { correct: false, answer: "" });
   assert.equal(entry.word, session.items[index].drill.answer);
+});
+
+test("zen sessions top up instead of finishing", () => {
+  const progress = fresh();
+  const settings = { sessionLength: 5, modes: ["read"] };
+  const session = createSession({ progress, track: "core", settings, seed: 21, zen: true });
+  assert.equal(session.zen, true);
+  const before = session.items.length;
+  assert.ok(extendSession(session, { progress, settings, seed: 99 }) > 0);
+  assert.equal(session.items.length, before * 2);
+  assert.equal(new Set(session.items.map((item) => item.id)).size, session.items.length);
+  assert.equal(session.items.at(-1).index, session.items.length - 1);
+});
+
+test("only the enabled question types are scheduled", () => {
+  const progress = fresh();
+  const session = createSession({ progress, track: "core", settings: { sessionLength: 12, modes: ["read"] }, seed: 4 });
+  assert.deepEqual([...new Set(session.items.map((item) => item.mode))], ["read"]);
 });

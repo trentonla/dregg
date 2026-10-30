@@ -12,6 +12,7 @@ import {
   createSession,
   canonicalUnit,
   ensureProgress,
+  extendSession,
   finishSession,
   isUnitUnlocked,
   masterySummary,
@@ -146,8 +147,8 @@ export function createStore({ storage = createStorage(), lexicon = LEXICON, now 
     currentItem() {
       return state.session?.items?.[state.session.index] || null;
     },
-    startSession({ focusUnit = null } = {}) {
-      const session = api.ensureSession({ focusUnit });
+    startSession({ focusUnit = null, zen = false } = {}) {
+      const session = api.ensureSession({ focusUnit, zen });
       if (!session) {
         api.toast("No eligible words yet. Try another track.");
         return null;
@@ -160,9 +161,9 @@ export function createStore({ storage = createStorage(), lexicon = LEXICON, now 
     },
     // Create a session in place, without navigating or notifying listeners, so
     // opening Practice can start one that stays invisible until it is answered.
-    ensureSession({ focusUnit = null } = {}) {
+    ensureSession({ focusUnit = null, zen = false } = {}) {
       const wanted = focusUnit ? canonicalUnit(focusUnit) : null;
-      if (state.session && !state.session.finished && state.session.items.length && (!wanted || state.session.focusUnit === wanted)) {
+      if (state.session && !state.session.finished && state.session.items.length && (!wanted || state.session.focusUnit === wanted) && (!zen || state.session.zen)) {
         return state.session;
       }
       const session = createSession({
@@ -173,6 +174,7 @@ export function createStore({ storage = createStorage(), lexicon = LEXICON, now 
         seed: Date.now(),
         now: now(),
         focusUnit,
+        zen,
       });
       if (!session.items.length) return null;
       state.session = session;
@@ -191,9 +193,10 @@ export function createStore({ storage = createStorage(), lexicon = LEXICON, now 
         track: state.track,
         seed: Date.now(),
         now: now(),
+        settings: state.settings,
       });
       if (!session.items.length) {
-        api.toast("Brief forms unlock with the strokes they use.");
+        api.toast("No brief forms ready with these settings.");
         return false;
       }
       state.session = session;
@@ -246,8 +249,11 @@ export function createStore({ storage = createStorage(), lexicon = LEXICON, now 
       const session = state.session;
       if (!session) return;
       if (session.index >= session.items.length - 1) {
-        api.finish();
-        return;
+        if (!session.zen) {
+          api.finish();
+          return;
+        }
+        extendSession(session, { progress: state.progress, lexicon, settings: state.settings, seed: Date.now() });
       }
       session.index += 1;
       emit();

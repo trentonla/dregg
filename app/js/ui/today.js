@@ -1,5 +1,5 @@
 // Today: one primary action, a thin mastery line, weak spots, and a streak.
-import { escapeHtml, pageHeader, percent, progressBar, ring, unitGlyph, unitLabel } from "./components.js";
+import { escapeHtml, modeLabel, pageHeader, percent, progressBar, ring, unitGlyph, unitLabel } from "./components.js";
 import { availableBriefs } from "../engine.js";
 
 function todayKey() {
@@ -35,7 +35,8 @@ export function renderToday(root, store) {
           </div>
         </div>
         <button class="btn btn--primary btn--wide" data-start>${resume ? "Resume session" : "Start a session"}</button>
-        <p class="muted">${state.settings.sessionLength} items · ${state.settings.modeMix === "mixed" ? "read, write, drill, trace" : state.settings.modeMix}</p>
+        <button class="btn btn--secondary btn--wide" data-zen>Zen practice · no limit</button>
+        <p class="muted">${state.settings.sessionLength} items · ${state.settings.modes.map(modeLabel).join(", ")}</p>
       </div>
 
       <div class="today-side">
@@ -86,6 +87,7 @@ export function renderToday(root, store) {
   root.querySelector("[data-start]").addEventListener("click", () => {
     if (!store.resumeSession()) store.startSession();
   });
+  root.querySelector("[data-zen]")?.addEventListener("click", () => store.startSession({ zen: true }));
   for (const button of root.querySelectorAll("[data-unit]")) {
     button.addEventListener("click", () => store.practiceUnit(button.dataset.unit));
   }

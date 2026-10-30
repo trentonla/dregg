@@ -25,13 +25,15 @@ test("settings are clamped and validated", () => {
     sessionLength: 900,
     dailyGoal: 7,
     theme: "neon",
-    modeMix: "nope",
+    modes: ["read", "nope"],
     sound: "yes",
   });
   assert.equal(settings.sessionLength, 30);
   assert.equal(settings.dailyGoal, DEFAULT_SETTINGS.dailyGoal);
   assert.equal(settings.theme, "system");
-  assert.equal(settings.modeMix, "mixed");
+  assert.deepEqual(settings.modes, ["read"]);
+  // Backups from before the per-mode toggles still carry modeMix.
+  assert.deepEqual(sanitizeSettings({ modeMix: "write" }).modes, ["write"]);
   assert.equal(settings.sound, false);
 });
 

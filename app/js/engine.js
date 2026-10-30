@@ -7,6 +7,7 @@ import { LEXICON } from "./data/lexicon.js";
 import { createRng } from "./rng.js";
 import { gradeDrill, gradeRead } from "./grader.js";
 import { BRIEF_FORMS, briefRecord } from "./briefs.js";
+import { PRACTICE_MODES } from "./storage.js";
 
 export const EMA_ALPHA = 0.3;
 export const UNLOCK_ATTEMPTS = 8;
@@ -208,10 +209,10 @@ function chooseDrill(progress, track, focus, rng) {
   };
 }
 
-const modeCycle = {
-  read: ["read"],
-  write: ["write"],
-  mixed: ["read", "write", "drill", "read", "trace"],
+const practiceModes = (settings = {}) => {
+  const enabled = Array.isArray(settings.modes) ? settings.modes : PRACTICE_MODES;
+  const modes = PRACTICE_MODES.filter((mode) => enabled.includes(mode));
+  return modes.length ? modes : ["read"];
 };
 
 export function createSession({
@@ -222,6 +223,7 @@ export function createSession({
   seed = Date.now(),
   now = new Date().toISOString(),
   focusUnit = null,
+  zen = false,
 } = {}) {
   ensureProgress(progress, track);
   const rng = createRng(seed);
@@ -236,7 +238,7 @@ export function createSession({
     unlocked[0] ||
     null;
 
-  const modes = modeCycle[settings.modeMix] || modeCycle.mixed;
+  const modes = practiceModes(settings);
   const items = [];
   const recent = [...(progress.recentWords || [])];
   const recentSet = new Set(recent);
@@ -287,8 +289,30 @@ export function createSession({
     startedAt: now,
     focusUnit: focus,
     unlockCandidate: unlockReady(progress, track),
+    zen: Boolean(zen),
     finished: false,
   };
+}
+
+// Zen sessions never end: top up the item list when the learner reaches the end.
+export function extendSession(session, { progress, lexicon = LEXICON, settings = {}, seed = Date.now() } = {}) {
+  if (!session?.zen) return 0;
+  const offset = session.items.length;
+  const batch = createSession({
+    progress,
+    lexicon,
+    track: session.track,
+    settings,
+    seed: seed + offset,
+    focusUnit: session.focusUnit,
+    zen: true,
+  });
+  for (const [index, item] of batch.items.entries()) {
+    item.id = `${session.seed}-${offset + index}`;
+    item.index = offset + index;
+    session.items.push(item);
+  }
+  return batch.items.length;
 }
 
 // Brief forms unlock with the strokes they are built from, not with a phase of
@@ -307,12 +331,15 @@ export function createBriefSession({
   track = "core",
   seed = Date.now(),
   now = new Date().toISOString(),
+  settings = {},
 } = {}) {
   const blends = unlockedBlends(progress, track);
+  // Brief forms are only read and written; trace/drill toggles do not apply.
+  const modes = practiceModes(settings).filter((mode) => mode === "read" || mode === "write");
   const items = [];
   for (const brief of availableBriefs(progress, track, blends)) {
     const word = briefRecord(brief, { blends });
-    for (const mode of ["read", "write"]) {
+    for (const mode of modes) {
       items.push({
         id: `${seed}-${items.length}`,
         index: items.length,
@@ -405,6 +432,7 @@ export function finishSession(progress, session, { now = new Date().toISOString(
     durationMs: Math.max(0, new Date(now).getTime() - new Date(session.startedAt).getTime()),
     focusUnit: session.focusUnit,
     unlocked,
+    zen: Boolean(session.zen),
     modes: [...new Set(session.results.map((result) => result.mode))],
   };
   updateStreak(progress, now);

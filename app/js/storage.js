@@ -8,11 +8,14 @@ export const KEYS = {
   history: "dregg.v2.history",
 };
 
+// The question types the learner can switch on. Order is the cycle order.
+export const PRACTICE_MODES = ["read", "write", "trace", "drill"];
+
 export const DEFAULT_SETTINGS = {
   version: VERSION,
   onboardingDone: false,
   sessionLength: 15,
-  modeMix: "mixed",
+  modes: [...PRACTICE_MODES],
   dailyGoal: 10,
   sound: false,
   theme: "system",
@@ -43,11 +46,16 @@ const arrayOfStrings = (value, limit = 40) =>
 
 export function sanitizeSettings(raw) {
   const input = isObject(raw) ? raw : {};
+  // modeMix is the pre-modes shape; map it once so existing backups keep working.
+  const legacy = { read: ["read"], write: ["write"], mixed: PRACTICE_MODES }[input.modeMix];
+  const modes = Array.isArray(input.modes)
+    ? PRACTICE_MODES.filter((mode) => input.modes.includes(mode))
+    : legacy || [];
   return {
     version: VERSION,
     onboardingDone: bool(input.onboardingDone, DEFAULT_SETTINGS.onboardingDone),
     sessionLength: clamp(number(input.sessionLength, DEFAULT_SETTINGS.sessionLength), 5, 30),
-    modeMix: oneOf(input.modeMix, ["read", "write", "mixed"], DEFAULT_SETTINGS.modeMix),
+    modes: modes.length ? modes : [...PRACTICE_MODES],
     dailyGoal: oneOf(number(input.dailyGoal, DEFAULT_SETTINGS.dailyGoal), [5, 10, 15], DEFAULT_SETTINGS.dailyGoal),
     sound: bool(input.sound, DEFAULT_SETTINGS.sound),
     theme: oneOf(input.theme, ["system", "light", "dark"], DEFAULT_SETTINGS.theme),
