@@ -76,6 +76,9 @@ for (const [word, phones] of cmu) {
   if (word.length < 2 || word.length > 12) continue;
   const syllables = syllableCount(phones);
   if (syllables < 1 || syllables > 3) continue;
+  // Abbreviations in CMUdict (ls, tv, mph) have no vowel letter; no Gregg
+  // learner should meet them as a word.
+  if (!/[aeiouy]/.test(word)) continue;
   const record = makeRecord(word, phones, { tier: tierForRank(freq.rank) });
   if (!knownUnits(record)) continue;
   if (record.core.length > 14) continue;
@@ -84,8 +87,9 @@ for (const [word, phones] of cmu) {
 real.sort((a, b) => a.rank - b.rank);
 
 // Start with the most useful words, then top up rare units so every unit has
-// enough practice material. 2,000 common words cover the whole inventory.
-const TARGET = 2000;
+// enough practice material. 3,000 common words cover the whole inventory with
+// room for session variety.
+const TARGET = 3000;
 const MIN_UNIT_WORDS = 12;
 const chosen = real.slice(0, TARGET).map(({ record }) => record);
 const chosenWords = new Set(chosen.map((record) => record.w));
