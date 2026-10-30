@@ -411,8 +411,8 @@
   flex: none;
   display: grid;
   place-items: center;
-  width: 6rem;
-  height: 6rem;
+  width: min(8rem, 34vw);
+  height: min(8rem, 34vw);
   border-radius: var(--radius-sm);
   background: var(--paper);
 }

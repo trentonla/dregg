@@ -42,7 +42,7 @@ function detail(id, state) {
   return `<aside class="chart-detail" role="dialog" aria-label="${escapeHtml(unit.label)}" aria-live="polite">
     <button class="chart-close" data-close aria-label="Close">×</button>
     <div class="chart-detail-head">
-      <div class="chart-detail-glyph">${unitGlyph(id, "precision", { className: "glyph glyph--hero" })}</div>
+      <div class="chart-detail-glyph">${unitGlyph(id, "precision", { className: "glyph glyph--hero", frame: [0, 0] })}</div>
       <div>
         <p class="eyebrow">${escapeHtml(unit.kind)}${unit.family ? ` · family ${unit.family.toUpperCase()}` : ""}</p>
         <h2>${escapeHtml(unit.label)}</h2>

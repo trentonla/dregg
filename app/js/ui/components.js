@@ -15,12 +15,12 @@ export function unitLabel(id) {
   return unitFor(id)?.label || id;
 }
 
-export function unitGlyph(id, track = "core", { className = "glyph", label = unitLabel(id), viewBox } = {}) {
+export function unitGlyph(id, track = "core", { className = "glyph", label = unitLabel(id), viewBox, frame = UNIT_FRAME } = {}) {
   const outline = outlineForUnit(id, track);
   return outlineSvg(outline, {
     className,
     label,
-    viewBox: viewBox === undefined ? referenceViewBox(outline, UNIT_FRAME) : viewBox,
+    viewBox: viewBox === undefined ? referenceViewBox(outline, frame) : viewBox,
   });
 }
 
