@@ -183,3 +183,20 @@ test("word outlines share one fixed frame and never clip", () => {
     assert.ok(ox + ow <= x + w + 1e-6 && oy + oh <= y + h + 1e-6, `${record.w} fits the frame`);
   }
 });
+
+test("k/g peak right of centre and r/l bottom left of centre", () => {
+  const apex = (id) => {
+    const points = outlineForUnit(id, "precision").segments.flatMap((segment) => segment.points || []);
+    const xs = points.map((point) => point.x);
+    const ys = points.map((point) => point.y);
+    const minX = Math.min(...xs);
+    const maxX = Math.max(...xs);
+    const extreme = id === "k" || id === "g" ? Math.min(...ys) : Math.max(...ys);
+    const hits = points.filter((point) => Math.abs(point.y - extreme) < 1e-6).map((point) => point.x);
+    return (hits.reduce((sum, x) => sum + x, 0) / hits.length - minX) / (maxX - minX);
+  };
+  assert.ok(apex("k") > 0.55, `k peaks right of centre (${apex("k").toFixed(2)})`);
+  assert.ok(apex("g") > 0.55, `g peaks right of centre (${apex("g").toFixed(2)})`);
+  assert.ok(apex("r") < 0.45, `r bottoms left of centre (${apex("r").toFixed(2)})`);
+  assert.ok(apex("l") < 0.45, `l bottoms left of centre (${apex("l").toFixed(2)})`);
+});

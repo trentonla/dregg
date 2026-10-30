@@ -57,10 +57,10 @@ Suggested starting primitive values (tune against the golden sheet):
 | `m` | 0° | 2.0 u | 0 |
 | `t` | −30° | 1.0 u | 0 |
 | `d` | −30° | 2.0 u | 0 |
-| `k` | 0° | 1.0 u | +0.18 u (arch up) |
-| `g` | 0° | 2.0 u | +0.18 u (arch up) |
-| `r` | 0° | 1.0 u | −0.14 u (cup down) |
-| `l` | 0° | 2.0 u | −0.14 u (cup down) |
+| `k` | 0° | 1.0 u | +0.18 u (arch up, peak right of centre) |
+| `g` | 0° | 2.0 u | +0.18 u (arch up, peak right of centre) |
+| `r` | 0° | 1.0 u | −0.14 u (cup down, low point left of centre) |
+| `l` | 0° | 2.0 u | −0.14 u (cup down, low point left of centre) |
 | `p` | 90° | 1.0 u | +0.20 u (bulge left) |
 | `b` | 90° | 2.0 u | +0.20 u (bulge left) |
 | `f` | 90° | 1.0 u | −0.20 u (bulge right) |
@@ -86,10 +86,10 @@ visual target, not a formula. The golden sheet is the arbiter.
 
 | ID | Phoneme(s) | Length | Description | Examples | Confidence |
 | --- | --- | --- | --- | --- | --- |
-| `k` | /k/ | short | shallow arch, bowing up | *can*, *key* | ✅ |
-| `g` | /ɡ/ | long | shallow arch, bowing up | *go*, *good* | ✅ |
-| `r` | /r/ | short | shallow cup, bowing down | *run*, *are* | ✅ |
-| `l` | /l/ | long | shallow cup, bowing down | *look*, *all* | ✅ |
+| `k` | /k/ | short | shallow arch, bowing up, peak right of centre | *can*, *key* | ✅ |
+| `g` | /ɡ/ | long | shallow arch, bowing up, peak right of centre | *go*, *good* | ✅ |
+| `r` | /r/ | short | shallow cup, bowing down, low point left of centre | *run*, *are* | ✅ |
+| `l` | /l/ | long | shallow cup, bowing down, low point left of centre | *look*, *all* | ✅ |
 | `n` | /n/ | short | horizontal line | *no*, *in* | ✅ |
 | `m` | /m/ | long | horizontal line | *me*, *am* | ✅ |
 | `t` | /t/ | short | straight, rising right ≈30° | *it*, *at* | ✅ |

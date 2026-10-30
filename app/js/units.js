@@ -118,17 +118,17 @@ export const CONSONANTS = [
     length: "long",
     phase: 5,
   }),
-  C("k", ["K"], "K", curve(1, 0, 0.18), "Shallow arch, bowing up.", ["can", "key"], {
+  C("k", ["K"], "K", curve(1, 0, 0.18, { apex: 0.62 }), "Shallow arch, bowing up, peak to the right.", ["can", "key"], {
     direction: "forward",
     length: "short",
     phase: 2,
-    variants: { kr: curve(1, 0, 0.1), kl: curve(1, 0, 0.26) },
+    variants: { kr: curve(1, 0, 0.1, { apex: 0.62 }), kl: curve(1, 0, 0.26, { apex: 0.62 }) },
   }),
-  C("g", ["G"], "G", curve(2, 0, 0.18), "Long shallow arch, bowing up.", ["go", "good"], {
+  C("g", ["G"], "G", curve(2, 0, 0.18, { apex: 0.62 }), "Long shallow arch, bowing up, peak to the right.", ["go", "good"], {
     direction: "forward",
     length: "long",
     phase: 2,
-    variants: { gr: curve(2, 0, 0.1), gl: curve(2, 0, 0.26) },
+    variants: { gr: curve(2, 0, 0.1, { apex: 0.62 }), gl: curve(2, 0, 0.26, { apex: 0.62 }) },
   }),
   C("f", ["F"], "F", curve(1, 90, 0.2), "Short downward curve, bowing right.", ["for", "if"], {
     direction: "downward",
@@ -185,28 +185,28 @@ export const CONSONANTS = [
     "l",
     ["L"],
     "L",
-    curve(2, 0, -0.14),
-    "Long shallow cup, bowing down.",
+    curve(2, 0, -0.14, { apex: 0.38 }),
+    "Long shallow cup, bowing down, low point to the left.",
     ["look", "all"],
     {
       direction: "forward",
       length: "long",
       phase: 2,
-      variants: { ld: curve(2, 0, -0.14, { ld: true }), lk: curve(2, 0, -0.06) },
+      variants: { ld: curve(2, 0, -0.14, { ld: true, apex: 0.38 }), lk: curve(2, 0, -0.06, { apex: 0.38 }) },
     },
   ),
   C(
     "r",
     ["R", "ER"],
     "R",
-    curve(1, 0, -0.14),
-    "Short shallow cup before a vowel; a small circle after one.",
+    curve(1, 0, -0.14, { apex: 0.38 }),
+    "Short shallow cup before a vowel, low point to the left; a small circle after one.",
     ["run", "are"],
     {
       direction: "forward",
       length: "short",
       phase: 2,
-      variants: { circle: ellipse(0.16, 0.14), rk: curve(1, 0, -0.06) },
+      variants: { circle: ellipse(0.16, 0.14), rk: curve(1, 0, -0.06, { apex: 0.38 }) },
     },
   ),
   C("m", ["M"], "M", line(2, 0), "Long horizontal line.", ["me", "am"], {

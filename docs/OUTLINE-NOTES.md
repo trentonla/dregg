@@ -30,6 +30,7 @@ against a manual/dictionary), `fixed` (rule or override added).
 | 19 | Productive contractions | approximated | `con`/`com` = `k`, `-tion` = `sh`, `-ing` dot, `-ment` = `m`, etc. change the unit sequence; avoid false positives (*complete*/*keep*, *baggage*/*package*). | Anniversary Manual ch2 §58, ch3 §80–81, ch5 §127, ch7 §170; COMBINATIONS §9 |
 | 20 | Additional blends | open | `ted`/`ded`/`det` and `men`/`mem` are single-stroke blends in the manual but not on the six-blend chart. Deferred to post-v1. | Anniversary Manual ch1 §26–27; COMBINATIONS §8.2 |
 | 21 | `x` form | fixed | `x` is `s` modified in slant at the end of or within a word, not `k` + `s`. | Anniversary Manual ch2 §57 |
+| 22 | `k`/`g`/`r`/`l` curve asymmetry | fixed | The curves are elliptical segments, not symmetric arcs: the `k`/`g` peak sits right of centre with a short down-tail, and the `r`/`l` low point sits left of centre with a long rise. Modelled with offset control points (`apex`). | Anniversary scan p17; STROKE-REFERENCE §2 |
 
 ## Adding an entry
 

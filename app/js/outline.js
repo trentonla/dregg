@@ -101,6 +101,26 @@ function precedingConsonant(seq, index, track) {
   return null;
 }
 
+// A curve's high point sits at `apex` along the chord (0.5 = symmetric).
+// Weighting the two control-point normals moves the peak without moving the
+// endpoints, which is what makes k/g and r/l read as swooshes rather than arcs.
+function curveControls(pen, dir, n, length, bend, apex = 0.5) {
+  if (apex === 0.5) {
+    return {
+      c1: add(add(pen, scale(dir, length / 3)), scale(n, bend)),
+      c2: add(add(pen, scale(dir, (length * 2) / 3)), scale(n, bend)),
+    };
+  }
+  const t = Math.min(0.64, Math.max(0.25, apex));
+  const ratio = (3 * t * t - 4 * t + 1) / (3 * t * t - 2 * t);
+  const peak = 0.75 * bend;
+  const b1 = peak / (3 * t * (1 - t) * (1 - t + ratio * t));
+  return {
+    c1: add(add(pen, scale(dir, length / 3)), scale(n, b1)),
+    c2: add(add(pen, scale(dir, (length * 2) / 3)), scale(n, ratio * b1)),
+  };
+}
+
 function placeConsonant(id, pen, variant, track, join = null) {
   const glyph = glyphOf(id, track, variant);
   if (!glyph) return null;
@@ -212,8 +232,7 @@ function placeConsonant(id, pen, variant, track, join = null) {
       points = sampleCubic(pen, c1, c2, end);
     } else {
       const bend = bulge * length * 1.35;
-      const c1 = add(add(pen, scale(dir, length / 3)), scale(n, bend));
-      const c2 = add(add(pen, scale(dir, (length * 2) / 3)), scale(n, bend));
+      const { c1, c2 } = curveControls(pen, dir, n, length, bend, glyph.apex);
       d = pathCubic(pen, c1, c2, end);
       points = sampleCubic(pen, c1, c2, end);
     }
