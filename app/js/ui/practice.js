@@ -1,7 +1,7 @@
 // Focused practice route. Read, write, trace, and drill share one session shell.
 import { UNIT_BY_ID } from "../units.js";
 import { LEXICON } from "../data/lexicon.js";
-import { outlineForWord, outlineSvg } from "../outline.js";
+import { UNIT_VIEWBOX, outlineForWord, outlineSvg, referenceViewBox } from "../outline.js";
 import { gradeDrill, gradeRead, traceScore, READ_ANSWER_OVERRIDES } from "../grader.js";
 import { isUnitUnlocked, recommendation, trackUnits } from "../engine.js";
 import { mountCanvas } from "../draw/canvas.js";
@@ -46,18 +46,6 @@ function formatDuration(ms) {
   return `${minutes}:${String(seconds).padStart(2, "0")}`;
 }
 
-function scaledViewBox(outline) {
-  // Keep short words at a consistent scale so stroke sizes stay comparable
-  // (mad vs nit, d vs t); long words still auto-fit instead of clipping.
-  const [x, y, w, h] = outline.viewBox;
-  const refW = 4;
-  const refH = 2.5;
-  const vw = Math.max(refW, w);
-  const vh = Math.max(refH, h);
-  const cx = x + w / 2;
-  const cy = y + h / 2;
-  return [cx - vw / 2, cy - vh / 2, vw, vh];
-}
 function noteFor(item, outline) {
   if (item.mode === "drill") return UNIT_BY_ID[item.drill?.answer]?.description || "";
   const units = (item.units || []).map(unitLabel).join(" · ");
@@ -72,7 +60,7 @@ function noteFor(item, outline) {
 function promptHtml(item, outline, sound, blends) {
   if (item.mode === "read") {
     return `<div class="stage stage--read">
-      <div class="outline-stage">${outlineSvg(outlineForWord(item.word, item.track, { blends }), { className: "outline outline--large", label: "Outline to read", viewBox: scaledViewBox(outline) })}</div>
+      <div class="outline-stage">${outlineSvg(outlineForWord(item.word, item.track, { blends }), { className: "outline outline--large", label: "Outline to read", viewBox: referenceViewBox(outline) })}</div>
       <p class="muted">Type the word this outline spells.</p>
     </div>`;
   }
@@ -82,7 +70,7 @@ function promptHtml(item, outline, sound, blends) {
       ${phonemes(item.word)}
       ${sound ? `<button class="btn btn--ghost btn--small" data-speak>Hear it</button>` : ""}
       <p class="muted">Write the outline on paper or below.</p>
-      ${view.revealed ? `<div class="reference-outline" data-reference>${outlineSvg(outlineForWord(item.word, item.track, { blends }), { className: "outline outline--large", label: "Reference outline", viewBox: scaledViewBox(outline) })}</div>` : ""}
+      ${view.revealed ? `<div class="reference-outline" data-reference>${outlineSvg(outlineForWord(item.word, item.track, { blends }), { className: "outline outline--large", label: "Reference outline", viewBox: referenceViewBox(outline) })}</div>` : ""}
     </div>`;
   }
   if (item.mode === "trace") {
@@ -98,7 +86,7 @@ function promptHtml(item, outline, sound, blends) {
   }
   if (item.mode === "drill") {
     return `<div class="stage stage--drill">
-      <div class="outline-stage">${unitGlyph(item.drill?.answer, item.track, { className: "glyph glyph--drill" })}</div>
+      <div class="outline-stage">${unitGlyph(item.drill?.answer, item.track, { className: "glyph glyph--drill", viewBox: UNIT_VIEWBOX })}</div>
       <p class="muted">Which stroke is this?</p>
     </div>`;
   }
@@ -177,7 +165,7 @@ function feedbackHtml(item, outline, total, blends) {
     return `<div class="feedback ${correct ? "feedback--correct" : "feedback--wrong"}" role="status" aria-live="polite">
       <p class="feedback-title">${correct ? "Correct." : "Not quite."}</p>
       <div class="drill-result">
-        <div class="outline-stage">${unitGlyph(answerId, item.track, { className: "glyph glyph--drill" })}</div>
+        <div class="outline-stage">${unitGlyph(answerId, item.track, { className: "glyph glyph--drill", viewBox: UNIT_VIEWBOX })}</div>
         <div>
           <p class="feedback-word">${escapeHtml(answerUnit?.label || answerId)}</p>
           <p class="feedback-note">${escapeHtml(answerUnit?.description || "")}</p>
@@ -192,7 +180,7 @@ function feedbackHtml(item, outline, total, blends) {
     <p class="feedback-title">${correct ? "Correct." : "Not quite."}</p>
     <p class="feedback-word">${escapeHtml(item.word.w)}</p>
     ${phonemes(item.word)}
-    <div class="feedback-outline">${outlineSvg(outlineForWord(item.word, item.track, { blends }), { className: "outline outline--large", label: item.word.w, viewBox: scaledViewBox(outline) })}</div>
+    <div class="feedback-outline">${outlineSvg(outlineForWord(item.word, item.track, { blends }), { className: "outline outline--large", label: item.word.w, viewBox: referenceViewBox(outline) })}</div>
     ${breakdown(item.units, item.track)}
     <p class="feedback-note">${escapeHtml(noteFor(item, outline))}</p>
     ${

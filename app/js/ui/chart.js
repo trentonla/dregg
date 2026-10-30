@@ -11,13 +11,10 @@ const FAMILY_TITLES = {
   u: "U — oo / uh",
 };
 
-// One frame for every card, so a short stroke really looks short beside a long one.
-const CHART_VIEWBOX = [-1.6, -1.2, 3.8, 3.4];
-
 function unitCard(id, state, selected) {
   const unlocked = isUnitUnlocked(state.progress, id, state.track) && trackUnits(state.track).includes(id);
   return `<button class="chart-unit${unlocked ? "" : " is-locked"}${selected === id ? " is-selected" : ""}" data-unit="${escapeHtml(id)}" aria-pressed="${selected === id}">
-    ${unitGlyph(id, "precision", { className: "glyph chart-glyph", viewBox: CHART_VIEWBOX })}
+    ${unitGlyph(id, "precision", { className: "glyph chart-glyph" })}
     <span class="chart-name">${escapeHtml(unitLabel(id))}</span>
     ${unlocked ? "" : `<span class="lock-dot" aria-label="Locked">·</span>`}
   </button>`;

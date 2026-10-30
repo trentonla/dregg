@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { renderOutline, outlineForUnit, outlineForWord, outlineSvg } from "../app/js/outline.js";
-import { LEXICON_BY_WORD } from "../app/js/data/lexicon.js";
+import { UNIT_VIEWBOX, referenceViewBox, renderOutline, outlineForUnit, outlineForWord, outlineSvg } from "../app/js/outline.js";
+import { LEXICON, LEXICON_BY_WORD } from "../app/js/data/lexicon.js";
 import { UNIT_BY_ID } from "../app/js/units.js";
 
 test("outline output is finite and deterministic", () => {
@@ -158,5 +158,28 @@ test("every outline stays finite and inside its viewBox", () => {
         assert.ok(point.y >= y - 1e-6 && point.y <= y + h + 1e-6, `${name} point y in viewBox`);
       }
     }
+  }
+});
+
+test("unit glyphs share one fixed frame so short and long strokes compare", () => {
+  const [fx, fy, fw, fh] = UNIT_VIEWBOX;
+  for (const id of Object.keys(UNIT_BY_ID)) {
+    const [x, y, w, h] = outlineForUnit(id, "precision").viewBox;
+    assert.ok(x >= fx - 1e-6 && y >= fy - 1e-6, `${id} fits the frame's top left`);
+    assert.ok(x + w <= fx + fw + 1e-6 && y + h <= fy + fh + 1e-6, `${id} fits the frame's bottom right`);
+  }
+});
+
+test("word outlines share one fixed frame and never clip", () => {
+  const short = referenceViewBox(outlineForUnit("t", "precision"));
+  const long = referenceViewBox(outlineForUnit("d", "precision"));
+  assert.deepEqual(short.slice(2), long.slice(2), "short and long strokes use the same frame size");
+  for (const record of LEXICON) {
+    if (!record) continue;
+    const outline = outlineForWord(record, "precision");
+    const [x, y, w, h] = referenceViewBox(outline);
+    const [ox, oy, ow, oh] = outline.viewBox;
+    assert.ok(ox >= x - 1e-6 && oy >= y - 1e-6, `${record.w} fits the frame`);
+    assert.ok(ox + ow <= x + w + 1e-6 && oy + oh <= y + h + 1e-6, `${record.w} fits the frame`);
   }
 });

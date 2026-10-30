@@ -484,6 +484,11 @@
   font-size: var(--text-xs);
 }
 
+.mastery-cell .glyph--small {
+  width: 100%;
+  height: 2.75rem;
+}
+
 .mastery-cell .bar {
   height: 4px;
 }

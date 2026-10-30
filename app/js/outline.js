@@ -671,6 +671,20 @@ export function segmentsForTrace(outline) {
   return outline.segments.filter((segment) => segment.kind !== "dot" && segment.kind !== "mark");
 }
 
+// One frame per context so stroke lengths stay comparable at a glance.
+// Unit glyphs share a 4.4 x 4.0 u box, origin-aligned; words share a 7.0 x 4.5 u
+// frame centred on the outline. That covers 99% of the lexicon; the few longer
+// outlines get a larger frame instead of clipping (and only they rescale).
+export const UNIT_VIEWBOX = [-1.9, -1.5, 4.4, 4.0];
+export const WORD_FRAME = [7.0, 4.5];
+
+export function referenceViewBox(outline, [frameW, frameH] = WORD_FRAME) {
+  const [x, y, w, h] = outline.viewBox;
+  const width = Math.max(frameW, w + 0.2);
+  const height = Math.max(frameH, h + 0.2);
+  return [x + w / 2 - width / 2, y + h / 2 - height / 2, width, height];
+}
+
 export function outlineSvg(outline, { label = "Gregg outline", className = "outline", viewBox } = {}) {
   const [x, y, w, h] = viewBox || outline.viewBox;
   return `<svg class="${className}" viewBox="${x} ${y} ${w} ${h}" role="img" aria-label="${escapeAttr(label)}" fill="none" stroke="currentColor" stroke-width="0.055" stroke-linecap="round" stroke-linejoin="round"><path d="${outline.d}"/></svg>`;

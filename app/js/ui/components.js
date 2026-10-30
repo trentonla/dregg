@@ -1,5 +1,5 @@
 // Small render helpers shared by screens. Strings only; no framework.
-import { outlineForUnit, outlineForWord, outlineSvg } from "../outline.js";
+import { UNIT_VIEWBOX, outlineForUnit, outlineForWord, outlineSvg, referenceViewBox } from "../outline.js";
 import { unitFor } from "../units.js";
 
 export function escapeHtml(value) {
@@ -15,19 +15,22 @@ export function unitLabel(id) {
   return unitFor(id)?.label || id;
 }
 
-export function unitGlyph(id, track = "core", { className = "glyph", label = unitLabel(id), viewBox } = {}) {
+export function unitGlyph(id, track = "core", { className = "glyph", label = unitLabel(id), viewBox = UNIT_VIEWBOX } = {}) {
   return outlineSvg(outlineForUnit(id, track), { className, label, viewBox });
 }
 
-export function wordOutline(record, track = "core", { className = "outline outline--large", label, ...options } = {}) {
-  return outlineSvg(outlineForWord(record, track, options), {
+export function wordOutline(record, track = "core", { className = "outline outline--large", label, viewBox, ...options } = {}) {
+  const outline = outlineForWord(record, track, options);
+  return outlineSvg(outline, {
     className,
     label: label || `Outline for ${record.w}`,
+    viewBox: viewBox === undefined ? referenceViewBox(outline) : viewBox,
   });
 }
 
 export function unitChip(id, track = "core", { glyph = true } = {}) {
-  return `<span class="chip">${glyph ? unitGlyph(id, track, { className: "chip-glyph" }) : ""}<span>${escapeHtml(unitLabel(id))}</span></span>`;
+  // Chips are tiny decorative icons; a fixed frame would shrink them to dots.
+  return `<span class="chip">${glyph ? unitGlyph(id, track, { className: "chip-glyph", viewBox: null }) : ""}<span>${escapeHtml(unitLabel(id))}</span></span>`;
 }
 
 export function breakdown(units, track = "core") {
