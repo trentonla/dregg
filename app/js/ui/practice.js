@@ -104,7 +104,9 @@ function comparisonHtml(item, outline, blends) {
   const model = outlineSvg(outlineForWord(item.word, item.track, { blends }), {
     className: "outline",
     label: "Model outline",
-    viewBox: referenceViewBox(outline),
+    // Auto-fit like the learner's own ink, so both panels show the same shape
+    // at a readable size instead of one fixed frame and one fitted drawing.
+    viewBox: referenceViewBox(outline, [0, 0]),
   });
   return `<div class="marking-grid">
     <figure class="marking-panel"><figcaption>Your outline</figcaption><div class="marking-art">${strokesSvg(view.strokes)}</div></figure>
@@ -159,7 +161,6 @@ function answerHtml(item, outline, blends) {
     if (view.revealed) {
       return `<div class="answer answer--marking">
         ${comparisonHtml(item, outline, blends)}
-        <p class="muted">Compare your outline with the model.</p>
         <div class="button-row"><button class="btn btn--primary" data-grade="yes">I wrote it</button><button class="btn btn--secondary" data-grade="no">Not yet</button></div>
       </div>`;
     }
@@ -266,7 +267,7 @@ function feedbackHtml(item, outline, total, blends) {
           : ""
       }
       ${
-        item.mode === "trace" && !correct
+        (item.mode === "trace" || item.mode === "write") && !correct
           ? `<button class="btn btn--secondary" data-retry>Try again (this attempt counted)</button>`
           : ""
       }
@@ -393,7 +394,9 @@ export function renderPractice(root, store) {
   root.querySelector("[data-next]")?.addEventListener("click", () => store.next());
   root.querySelector("[data-retry]")?.addEventListener("click", () => {
     view.feedback = null;
-    view.strokes = [];
+    view.revealed = false;
+    // A write retry keeps the drawing so it can be corrected, not restarted.
+    if (item.mode !== "write") view.strokes = [];
     renderPractice(root, store);
   });
 
