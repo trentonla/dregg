@@ -21,6 +21,19 @@ body {
   overscroll-behavior-y: none;
 }
 
+/* Installed PWAs on iOS 26/27 get a blurred strip at the top unless a fixed
+   element with a background color touches the top edge. */
+.status-cap {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: max(6px, env(safe-area-inset-top));
+  background: var(--paper);
+  z-index: 60;
+  pointer-events: none;
+}
+
 h1,
 h2,
 h3,

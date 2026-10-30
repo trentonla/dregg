@@ -395,7 +395,9 @@
     left: 0;
     right: 0;
     height: var(--vv-height, 100dvh);
-    padding: calc(var(--space-2) + env(safe-area-inset-top)) var(--space-4)
+    /* Match the normal page top padding: the iOS status-bar glass has a soft
+       lower edge, and 8px left the top row inside it. */
+    padding: calc(var(--space-5) + env(safe-area-inset-top)) var(--space-4)
       calc(var(--space-2) + env(safe-area-inset-bottom));
     overflow: hidden;
   }

@@ -17,6 +17,9 @@
     <link rel="stylesheet" href="./css/practice.css">
   </head>
   <body>
+    <!-- iOS 26/27 draws a blurred status bar over installed PWAs unless a
+         fixed element with a background sits at the very top. -->
+    <div class="status-cap" aria-hidden="true"></div>
     <div class="app" id="app">
       <aside class="sidebar">
         <a class="brand" href="#/today">Dregg</a>
