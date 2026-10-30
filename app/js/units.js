@@ -28,7 +28,8 @@ const halfEllipse = (rx = 0.22, ry = 0.18, open = "up", angle = -20) => ({
 });
 const dot = (r = 0.06) => ({ type: "dot", r });
 const dash = (length = 0.3, angle = 0) => ({ type: "dash", length, angle });
-const composite = (parts) => ({ type: "composite", parts });
+// A diphthong is one continuous stroke; outline.js draws the shape.
+const diph = (shape) => ({ type: "diphthong", shape });
 
 const C = (id, phonemes, label, glyph, description, examples, extra = {}) => ({
   id,
@@ -90,13 +91,13 @@ export const CONSONANTS = [
     direction: "downward",
     length: "short",
     phase: 4,
-    variants: { pr: curve(1, 90, -0.1), pl: curve(1, 90, -0.28) },
+    variants: { pr: curve(1, 90, -0.34), pl: curve(1, 90, -0.44) },
   }),
   C("b", ["B"], "B", curve(2, 90, -0.2), "Long downward curve, bowing left.", ["be", "by"], {
     direction: "downward",
     length: "long",
     phase: 4,
-    variants: { br: curve(2, 90, -0.1), bl: curve(2, 90, -0.28) },
+    variants: { br: curve(2, 90, -0.34), bl: curve(2, 90, -0.44) },
   }),
   C("t", ["T"], "T", line(1, -30), "Short straight stroke, rising to the right.", ["it", "at"], {
     direction: "forward",
@@ -292,44 +293,32 @@ export const DIPHTHONGS = [
     "ai",
     ["AY"],
     "AI (isle)",
-    composite([
-      { glyph: ellipse(0.42, 0.36) },
-      { glyph: ellipse(0.18, 0.16), attach: "rim" },
-    ]),
-    "Large circle with a small circle at its upper right.",
+    diph("ai"),
+    "Large circle flowing into a small closing loop at its upper right.",
     ["isle", "my"],
   ),
   D(
     "ow",
     ["AW"],
     "OW (owl)",
-    composite([
-      { glyph: ellipse(0.42, 0.36) },
-      { glyph: halfEllipse(0.15, 0.14, "down", 0), attach: "rim" },
-    ]),
-    "Large circle with the U hook at its upper right.",
+    diph("ow"),
+    "Large circle sweeping up into the OO hook at its upper right.",
     ["owl", "how"],
   ),
   D(
     "oi",
     ["OY"],
     "OI (oil)",
-    composite([
-      { glyph: halfEllipse(0.22, 0.18, "up", -20) },
-      { glyph: ellipse(0.18, 0.16), attach: "end" },
-    ]),
-    "O hook with a small circle at its upper right.",
+    diph("oi"),
+    "O hook sweeping up into a small closing loop at its upper right.",
     ["oil", "boy"],
   ),
   D(
     "yu",
     ["Y", "UW"],
     "YU (unit)",
-    composite([
-      { glyph: ellipse(0.2, 0.18) },
-      { glyph: halfEllipse(0.15, 0.14, "down", 0), attach: "rim" },
-    ]),
-    "Small circle with the U hook at its upper right.",
+    diph("yu"),
+    "Small circle sweeping up into the OO hook at its upper right.",
     ["unit", "you"],
   ),
 ];
@@ -360,12 +349,14 @@ export const GLIDES = [
 ];
 
 export const BLENDS = [
-  B("blend-ten", "T/D + N", curve(1.2, -30, 0.16), "Short upward blend, as in ten and den.", ["ten", "den"]),
-  B("blend-ent", "N + T/D", curve(1.2, -30, 0.16), "Short upward blend, as in ent and end.", ["ent", "end"]),
-  B("blend-tem", "T/D + M", curve(2, -30, 0.16), "Long upward blend, as in tem and dem.", ["stem", "dem"]),
-  B("blend-emt", "M + T/D", curve(2, -30, 0.16), "Long upward blend, as in emt and emd.", ["empt", "emd"]),
-  B("blend-tive", "T/D + F/V", curve(1.4, 90, 0.3), "Large loop blend, as in tive and def-v.", ["active", "tive"]),
-  B("blend-pent", "P/J + NT/D", curve(1.4, 90, 0.3), "Large loop blend, as in pent-d and jent-d.", ["spend", "gent"]),
+  // The -nt/-nd and -mt/-md blends are upward curves like f/v: a cup that rises
+  // from the bottom of the preceding circle (p89 §133-134).
+  B("blend-ten", "T/D + N", curve(1, -40, -0.2), "Short upward curve, as in ten and den.", ["ten", "den"]),
+  B("blend-ent", "N + T/D", curve(1.1, -45, -0.22), "Short upward curve, as in ent and end.", ["ent", "end"]),
+  B("blend-tem", "T/D + M", curve(2, -40, -0.2), "Long upward curve, as in tem and dem.", ["stem", "dem"]),
+  B("blend-emt", "M + T/D", curve(2.1, -45, -0.22), "Long upward curve, as in emt and emd.", ["empt", "emd"]),
+  B("blend-tive", "T/D + F/V", { type: "loop", rx: 0.26, ry: 0.42 }, "Large loop blend, as in tive and def-v.", ["active", "tive"]),
+  B("blend-pent", "P/J + NT/D", { type: "loop", rx: 0.22, ry: 0.3 }, "Small loop blend, as in pent-d and jent-d.", ["spend", "gent"]),
 ];
 
 const withPhase = (units, phase, prerequisites = []) =>

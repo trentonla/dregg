@@ -147,7 +147,7 @@ variants; this is why the matrix is teachable.
 Mark rendering:
 
 - **Dot:** small filled dot centered below the glyph, offset outward from the stroke.
-- **Tick:** short line at ≈45°, below the glyph, pointing down-left.
+- **Tick:** short line at ≈45°, below the glyph, rising to the right (scans p19/p50/p64).
 - In **Core** mode, omit the mark and use the plain shape. The underlying unit ID still carries the
   precise sound.
 - In running Anniversary text the marks are optional when context is clear. The app should show
@@ -162,7 +162,7 @@ the opening.
 - Attached to a forward stroke: place at the stroke's end (opening up for O, down for U).
 - Attached to a downward stroke: place on the appropriate side, opening the same way (up for O, down for
   U).
-- U at a large circle rim for diphthongs (e.g. `ow`: U hook at the circle's upper right).
+- In a diphthong the hook grows straight out of the circle's rim, not as a separate blob.
 
 The scans (p50, p64, p51, p65) fix the orientation; the renderer exposes it in `Placement` so feedback can
 say “the hook opens upward.”
@@ -171,18 +171,19 @@ say “the hook opens upward.”
 
 ## 4. Diphthongs
 
-Diphthongs are composites. Render them as one ligature so the two vowel glyphs touch and are placed
-together.
+Diphthongs are **one continuous stroke**. The circle is drawn first and the pen never lifts: the
+stroke runs straight out of the circle into its hook or closing loop, so the sign reads as a single
+swoop rather than a snowman.
 
-| ID | Sound | Example | Components | Starting geometry |
+| ID | Sound | Example | Components | Geometry |
 | --- | --- | --- | --- | --- |
-| `ai` | /aɪ/ | *isle*, *my* | `a2` + `e3` | Large circle with a small circle attached at its upper right |
-| `ow` | /aʊ/ | *owl*, *how* | `a2` + `u3` | Large circle with the U hook attached at its right |
-| `oi` | /ɔɪ/ | *oil*, *boy* | `o2` + `e3` | O hook with a small circle attached at its upper right |
-| `yu` | /juː/ | *unit*, *you* | `e3` + `u3` | Small circle with the U hook attached above/right |
+| `ai` | /aɪ/ | *isle*, *my* | `a2` + `e3` | Large circle flowing into a small closing loop at its upper right |
+| `ow` | /aʊ/ | *owl*, *how* | `a2` + `u3` | Large circle sweeping up into the OO hook |
+| `oi` | /ɔɪ/ | *oil*, *boy* | `o2` + `e3` | O hook sweeping up into a small closing loop |
+| `yu` | /juː/ | *unit*, *you* | `e3` + `u3` | Small circle sweeping up into the OO hook |
 
-The chart shows these as distinct ligatures, not as two separately placed vowels. Match the chart
-rather than naively concatenating the two glyphs.
+Implemented in `outline.js` as the `diphthong` glyph type (`diphthongPath`): a single `pathBuilder`
+path, one `M`, no second subpath. The 1916 chart is the reference.
 
 ---
 
@@ -208,8 +209,9 @@ the data dictionary so the engine does not accidentally generate the long way ar
 | `ted` / `ded` / `det` | one long stroke | *added*, *rated*, *today* | post-v1 |
 | `men` / `mem` | one long stroke | *men*, *many*, *money* | post-v1 |
 
-Implementation: prefer an explicit composite path for each blend; a fillet is a fallback, not the
-primary model. Do not blend blindly: the `ten`/`dem` blend is not used when a strongly accented vowel
+Implementation: each blend is one authored stroke. The `-nt/-nd` and `-mt/-md` blends are upward
+curves like `f`/`v`: they start at the bottom of the preceding circle and cup upward, not arches laid
+over the top. `tive`/`pent` are single oval loops. Do not blend blindly: the `ten`/`dem` blend is not used when a strongly accented vowel
 occurs in the syllable (*dean, team, dome*), and the right-motion blend is preferred where either
 `ten`/`den` or `ent`/`end` is possible. Mark the placement `blend` so the UI can explain it. See
 [`COMBINATIONS.md`](COMBINATIONS.md) §8.

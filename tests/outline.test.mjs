@@ -81,21 +81,24 @@ test("precision vowel marks are drawn below the sign", () => {
   }
 });
 
-test("diphthong hooks attach to the preceding circle's rim", () => {
-  for (const id of ["ow", "yu"]) {
+test("each diphthong is one continuous stroke", () => {
+  for (const id of ["ai", "ow", "oi", "yu"]) {
     const outline = outlineForUnit(id, "precision");
-    const [circle, hook] = outline.segments;
-    assert.equal(circle.kind, "circle");
-    assert.equal(hook.kind, "hook");
-    const xs = circle.points.map((point) => point.x);
-    const ys = circle.points.map((point) => point.y);
-    const cx = (Math.min(...xs) + Math.max(...xs)) / 2;
-    const cy = (Math.min(...ys) + Math.max(...ys)) / 2;
-    const rx = (Math.max(...xs) - Math.min(...xs)) / 2;
-    const ry = (Math.max(...ys) - Math.min(...ys)) / 2;
-    const start = hook.points[0];
-    const onRim = ((start.x - cx) / rx) ** 2 + ((start.y - cy) / ry) ** 2;
-    assert.ok(Math.abs(onRim - 1) < 0.02, `${id} hook should start on the circle rim`);
+    assert.equal(outline.segments.length, 1, `${id} should be a single segment`);
+    assert.equal((outline.d.match(/M/g) || []).length, 1, `${id} should be one continuous path`);
+    assert.ok(outline.segments[0].points.length > 20, `${id} should trace a full circle`);
+  }
+});
+
+test("diphthongs close their circle and leave a tail", () => {
+  for (const id of ["ai", "ow", "yu"]) {
+    const points = outlineForUnit(id, "precision").segments[0].points;
+    const xs = points.map((point) => point.x);
+    const ys = points.map((point) => point.y);
+    const width = Math.max(...xs) - Math.min(...xs);
+    const height = Math.max(...ys) - Math.min(...ys);
+    assert.ok(width > 0.3, `${id} draws a circle, not a hook`);
+    assert.ok(height > width * 0.6, `${id} rises into its tail`);
   }
 });
 
@@ -111,9 +114,9 @@ test("s after a final r circle becomes one loop", () => {
 
 test("the stroke after a diphthong starts at the diphthong's end", () => {
   const outline = renderOutline(["ow", "t"], "precision", { word: "" });
-  const hook = outline.segments.find((segment) => segment.unitId === "ow" && segment.kind === "hook");
+  const diph = outline.segments.find((segment) => segment.unitId === "ow");
   const next = outline.segments.find((segment) => segment.unitId === "t");
-  const end = hook.points[hook.points.length - 1];
+  const end = diph.points[diph.points.length - 1];
   const start = next.points[0];
   assert.ok(Math.hypot(end.x - start.x, end.y - start.y) < 1e-6, "next stroke should continue from the diphthong end");
 });
@@ -199,4 +202,25 @@ test("k/g peak right of centre and r/l bottom left of centre", () => {
   assert.ok(apex("g") > 0.55, `g peaks right of centre (${apex("g").toFixed(2)})`);
   assert.ok(apex("r") < 0.45, `r bottoms left of centre (${apex("r").toFixed(2)})`);
   assert.ok(apex("l") < 0.45, `l bottoms left of centre (${apex("l").toFixed(2)})`);
+});
+
+test("the a3/e3 tick rises to the right under the sign", () => {
+  for (const id of ["a3", "e3"]) {
+    const mark = outlineForUnit(id, "precision").segments.find((segment) => segment.kind === "mark");
+    const [start, end] = mark.points;
+    assert.ok(end.x > start.x, `${id} tick points right`);
+    assert.ok(end.y < start.y, `${id} tick points up`);
+  }
+});
+
+test("nt/nd and mt/md blends cup upward", () => {
+  for (const id of ["blend-ten", "blend-ent", "blend-tem", "blend-emt"]) {
+    const points = outlineForUnit(id, "precision").segments[0].points;
+    const start = points[0];
+    const end = points[points.length - 1];
+    const mid = points[Math.floor(points.length / 2)];
+    const chordY = (start.y + end.y) / 2;
+    assert.ok(mid.y > chordY, `${id} sags below the chord (curves up)`);
+    assert.ok(end.y < start.y, `${id} rises to the right`);
+  }
 });

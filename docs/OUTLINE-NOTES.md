@@ -16,7 +16,7 @@ against a manual/dictionary), `fixed` (rule or override added).
 | 5 | `ng` / `nk` curvature | approximated | Chart looks like shallow straight down-right strokes; could be slight curves. | 1929 chart |
 | 6 | Two-curve vowel placement | open | When both neighbors are curves, “inside the nearest curve” is a heuristic. | Manual examples; golden corpus |
 | 7 | Vowel hook orientation | fixed | O hook is the lower half of the small ellipse and always opens up; ōō is the upper half and always opens down. No side-mirroring of the hook shape. | Anniversary scans p50, p64, p51, p65 |
-| 8 | Diphthong ligatures | fixed | `ai`, `ow`, `oi`, `yu` are composites: circle + attached part via `rim`/`end`, drawn as one path. | 1916 chart / 1929 chart; STROKE-REFERENCE §4 |
+| 8 | Diphthong ligatures | fixed | `ai`, `ow`, `oi`, `yu` are one continuous stroke each; see #24. | 1916 chart / 1929 chart; STROKE-REFERENCE §4 |
 | 9 | `ten`/`ent` blends | approximated | Approximated with a fillet; the printed form is a deliberate large curve. Prefer an explicit composite path. | 1916 chart blends |
 | 10 | `def-v` / `jent-d` loops | open | May need explicit composite paths rather than a fillet. | 1916 chart blends |
 | 11 | `s` mirror variants | fixed | Explicit distribution: left before/after `p`, `b`, `r`, `l` and after `t`, `d`, `n`, `m`, `o`; right otherwise. Geometry still to tune. | Anniversary Manual ch2 §49; COMBINATIONS §4 |
@@ -31,6 +31,10 @@ against a manual/dictionary), `fixed` (rule or override added).
 | 20 | Additional blends | open | `ted`/`ded`/`det` and `men`/`mem` are single-stroke blends in the manual but not on the six-blend chart. Deferred to post-v1. | Anniversary Manual ch1 §26–27; COMBINATIONS §8.2 |
 | 21 | `x` form | fixed | `x` is `s` modified in slant at the end of or within a word, not `k` + `s`. | Anniversary Manual ch2 §57 |
 | 22 | `k`/`g`/`r`/`l` curve asymmetry | fixed | The curves are elliptical segments, not symmetric arcs: the `k`/`g` peak sits right of centre with a short down-tail, and the `r`/`l` low point sits left of centre with a long rise. Modelled with offset control points (`apex`). | Anniversary scan p17; STROKE-REFERENCE §2 |
+| 23 | Vowel tick direction | fixed | The tick below `a3`/`e3` rises to the right, not down-right. `markSegment` now uses −45°. | Anniversary scans p19, p50, p64; STROKE-REFERENCE §3.1 |
+| 24 | Diphthongs as one stroke | fixed | `ai`/`ow`/`oi`/`yu` were a circle plus a separate hook/loop. They are now a single continuous path (`diphthong` glyph): the circle closes and runs straight into its tail. | 1916 chart; STROKE-REFERENCE §4 |
+| 25 | Blend orientation | fixed | `-nt/-nd` and `-mt/-md` cup upward from the bottom of the preceding circle; they no longer arch over its top. `tive`/`pent` are single oval loops. | Anniversary p89 §133–135; 1916 chart; STROKE-REFERENCE §5 |
+| 26 | `pr`/`pl`/`br`/`bl` joins | fixed | The first stroke bows further left so the pair reads as a `C` with a bottom tail, matching “start to the left” / “start down”. | Anniversary p35 §37–38; COMBINATIONS §3 |
 
 ## Adding an entry
 

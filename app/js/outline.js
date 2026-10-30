@@ -4,7 +4,6 @@ import {
   CORE_VOWEL_BY_FAMILY,
   UNIT_BY_ID,
   glyphFor,
-  isDiphthong,
   isGlide,
   isVowel,
 } from "./units.js";
@@ -88,7 +87,7 @@ function prevStrokeDir(prevId, track) {
   const unit = UNIT_BY_ID[displayId(prevId, track)];
   if (!unit || unit.kind !== "consonant") return null;
   const glyph = unit.glyph;
-  if (!glyph || glyph.type === "dot" || glyph.type === "ellipse" || glyph.type === "composite") return null;
+  if (!glyph || glyph.type === "dot" || glyph.type === "ellipse") return null;
   return direction(glyph.angle || 0);
 }
 
@@ -197,8 +196,21 @@ function placeConsonant(id, pen, variant, track, join = null) {
     };
   }
 
-  if (glyph.type === "composite") {
-    return placeComposite(id, glyph, pen, { x: 0, y: -1 }, 1);
+  if (glyph.type === "loop") {
+    const placed = loopBlendPath(pen, glyph);
+    return {
+      segment: makeSegment(id, "stroke", true, placed.d, placed.points),
+      placement: {
+        unitId: id,
+        rule: "blend",
+        side: "right",
+        anchorUnitId: null,
+        note: "Blend written as one loop.",
+      },
+      end: placed.end,
+      dir: { x: 1, y: 0 },
+      bulge: 0,
+    };
   }
 
   const dir = direction(glyph.angle || 0);
@@ -274,76 +286,110 @@ function halfEllipsePath(at, glyph, baseDeg = 0) {
   return { d, points, end, dir, start, center, rx, ry };
 }
 
-function placeComposite(id, glyph, pen, n, side) {
-  const segments = [];
-  const placements = [];
-  let end = pen;
-  let prev = null;
-  for (const part of glyph.parts || []) {
-    const g = part.glyph;
-    let at = pen;
-    let outward = n;
-    let baseDeg = 0;
-    if (prev) {
-      if (part.attach === "rim" && prev.type === "ellipse") {
-        // Attach at the upper-right of the previous circle, tangent to it.
-        const dir = rotate(prev.normal, Math.PI / 4);
-        at = add(prev.center, { x: prev.rx * dir.x, y: prev.ry * dir.y });
-        outward = dir;
-        baseDeg = (Math.atan2(dir.y, dir.x) * 180) / Math.PI;
-      } else {
-        at = prev.end;
-        outward = prev.dir;
-        baseDeg = (Math.atan2(outward.y, outward.x) * 180) / Math.PI;
+// Builds one continuous path: every call appends to the same `d`, so a
+// diphthong is a single stroke rather than a circle plus a stuck-on blob.
+function pathBuilder(start) {
+  const points = [start];
+  let d = `M${pointPath(start)}`;
+  let at = start;
+  return {
+    get d() {
+      return d;
+    },
+    get points() {
+      return points;
+    },
+    get end() {
+      return at;
+    },
+    cubic(c1, c2, p3) {
+      d += ` C${pointPath(c1)} ${pointPath(c2)} ${pointPath(p3)}`;
+      points.push(...sampleCubic(at, c1, c2, p3).slice(1));
+      at = p3;
+      return this;
+    },
+    // Ellipse arc as cubics. a0/a1 are radians in screen space (y down).
+    arc(cx, cy, rx, ry, a0, a1) {
+      const steps = Math.max(1, Math.ceil(Math.abs(a1 - a0) / (Math.PI / 2)));
+      const step = (a1 - a0) / steps;
+      let a = a0;
+      for (let i = 0; i < steps; i += 1) {
+        const b = a + step;
+        const k = (4 / 3) * Math.tan(step / 4);
+        const p0 = { x: cx + rx * Math.cos(a), y: cy + ry * Math.sin(a) };
+        const p3 = { x: cx + rx * Math.cos(b), y: cy + ry * Math.sin(b) };
+        this.cubic(
+          { x: p0.x - rx * k * Math.sin(a), y: p0.y + ry * k * Math.cos(a) },
+          { x: p3.x + rx * k * Math.sin(b), y: p3.y - ry * k * Math.cos(b) },
+          p3,
+        );
+        a = b;
       }
-    }
-    if (g.type === "ellipse") {
-      const placed = tangentEllipsePath(at, outward, g.rx, g.ry);
-      segments.push(makeSegment(id, "circle", true, placed.d, placed.points));
-      prev = {
-        type: "ellipse",
-        center: add(at, { x: outward.x * g.rx, y: outward.y * g.ry }),
-        rx: g.rx,
-        ry: g.ry,
-        normal: outward,
-        end: at,
-        dir: outward,
-      };
-      end = at;
-    } else if (g.type === "half-ellipse") {
-      const placed = halfEllipsePath(at, g, baseDeg);
-      segments.push(makeSegment(id, "hook", true, placed.d, placed.points));
-      prev = {
-        type: "half-ellipse",
-        center: placed.center,
-        rx: placed.rx,
-        ry: placed.ry,
-        normal: outward,
-        end: placed.end,
-        dir: placed.dir,
-      };
-      end = placed.end;
-    } else {
-      const dir = direction(g.angle || 0);
-      const nn = normal(dir);
-      const len = g.length || 0.4;
-      const p3 = add(at, scale(dir, len));
-      const bulge = (g.bulge ?? 0.18) * side;
-      const c1 = add(add(at, scale(dir, len * 0.3)), scale(nn, bulge));
-      const c2 = add(add(at, scale(dir, len * 0.8)), scale(nn, bulge * 0.6));
-      segments.push(makeSegment(id, "hook", true, pathCubic(at, c1, c2, p3), sampleCubic(at, c1, c2, p3)));
-      prev = { type: "hook", end: p3, dir };
-      end = p3;
-    }
+      return this;
+    },
+  };
+}
+
+// Anniversary/1916 chart: the circle flows straight into a rising hook (ow, yu)
+// or a small closing loop (ai, oi).
+const DIPHTHONG_SHAPES = {
+  ow: { rx: 0.32, ry: 0.26, tail: "hook" },
+  yu: { rx: 0.19, ry: 0.15, tail: "hook" },
+  ai: { rx: 0.32, ry: 0.26, tail: "loop" },
+  oi: { rx: 0.22, ry: 0.18, tail: "loop", hook: true },
+};
+
+function diphthongPath(pen, shapeId) {
+  const shape = DIPHTHONG_SHAPES[shapeId] || DIPHTHONG_SHAPES.ow;
+  const { rx, ry } = shape;
+  const b = pathBuilder(pen);
+  if (shape.hook) {
+    // oi opens with the o hook: left to right under the pen, then up.
+    b.arc(pen.x + rx, pen.y, rx, ry, Math.PI, 0);
+  } else {
+    // A closed circle below the pen, drawn clockwise back to the top, so the
+    // stroke leaves the circle already heading right into its tail.
+    b.arc(pen.x, pen.y + ry, rx, ry, -Math.PI / 2, (3 * Math.PI) / 2);
   }
-  placements.push({
-    unitId: id,
-    rule: "inside-curve",
-    side: sideLabel(n),
-    anchorUnitId: null,
-    note: "Diphthong is placed as one composite glyph.",
-  });
-  return { segments, placements, end };
+  const e = b.end;
+  if (shape.tail === "hook") {
+    b.cubic(
+      { x: e.x + 0.1, y: e.y - 0.06 },
+      { x: e.x + 0.24, y: e.y - 0.18 },
+      { x: e.x + 0.26, y: e.y - 0.32 },
+    );
+    b.cubic(
+      { x: e.x + 0.3, y: e.y - 0.42 },
+      { x: e.x + 0.22, y: e.y - 0.5 },
+      { x: e.x + 0.13, y: e.y - 0.46 },
+    );
+  } else {
+    if (!shape.hook) {
+      // Run along the top of the circle before curling into the small loop.
+      b.cubic(
+        { x: e.x + 0.07, y: e.y - 0.01 },
+        { x: e.x + 0.13, y: e.y - 0.03 },
+        { x: e.x + 0.17, y: e.y - 0.06 },
+      );
+    }
+    const tip = b.end;
+    const r = 0.07;
+    const lcx = tip.x + r * 0.7;
+    const lcy = tip.y - r * 0.7;
+    const start = Math.atan2(tip.y - lcy, tip.x - lcx);
+    b.arc(lcx, lcy, r, r, start, start + Math.PI * 1.7);
+  }
+  return { d: b.d, points: b.points, end: b.end };
+}
+
+// A blend written as a loop (tive, pent): one oval, no separate cap.
+function loopBlendPath(pen, glyph) {
+  const rx = glyph.rx ?? 0.26;
+  const ry = glyph.ry ?? 0.42;
+  const b = pathBuilder(pen);
+  // Start at the bottom of the oval and run round it, closing just short.
+  b.arc(pen.x, pen.y - ry, rx, ry, Math.PI / 2, Math.PI / 2 - Math.PI * 1.86);
+  return { d: b.d, points: b.points, end: b.end };
 }
 
 function placeOrnament(id, pen, prevId, nextId, track, index, total, word, loopDir = null, final = false) {
@@ -438,11 +484,11 @@ function placeOrnament(id, pen, prevId, nextId, track, index, total, word, loopD
   const glyph = glyphOf(id, track);
   if (!glyph) return { segments, placements };
 
-  if (glyph.type === "composite") {
-    const composite = placeComposite(id, glyph, pen, scale(n, side), side);
-    segments.push(...composite.segments);
+  if (glyph.type === "diphthong") {
+    const placed = diphthongPath(pen, glyph.shape);
+    segments.push(makeSegment(id, "stroke", true, placed.d, placed.points));
     placements.push(placement);
-    return { segments, placements, end: composite.end };
+    return { segments, placements, end: placed.end };
   }
 
   if (glyph.type === "ellipse") {
@@ -488,9 +534,15 @@ function placeOrnament(id, pen, prevId, nextId, track, index, total, word, loopD
     }
     placements.push(placement);
     // A following circle consonant (r after a vowel) starts on the far side of
-    // this circle instead of piling up on the same point.
+    // this circle instead of piling up on the same point. A blend starts on the
+    // right rim so it can rise from the bottom of the circle (p89).
     const nextIsCircle = nextUnit && nextUnit.kind === "consonant" && nextUnit.glyph?.type === "ellipse";
-    const end = nextIsCircle ? add(pen, scale(sideVec, radius * 2)) : undefined;
+    const nextIsBlend = nextUnit && nextUnit.kind === "blend";
+    const end = nextIsCircle
+      ? add(pen, scale(sideVec, radius * 2))
+      : nextIsBlend
+        ? { x: center.x + glyph.rx, y: center.y }
+        : undefined;
     return { segments, placements, end };
   }
 
@@ -547,7 +599,8 @@ function markSegment(unitId, center, outward, mark, radius) {
       sampleEllipse(at.x, at.y, r, r),
     );
   }
-  const d = direction(45);
+  // Scans p19/p50/p64: the tick rises to the right under the sign.
+  const d = direction(-45);
   const p1 = add(at, scale(d, -0.12));
   const p2 = add(at, scale(d, 0.13));
   return makeSegment(unitId, "mark", true, pathLine(p1, p2), [p1, p2]);
@@ -691,10 +744,10 @@ export function segmentsForTrace(outline) {
 }
 
 // One frame per context so stroke lengths stay comparable at a glance.
-// Unit glyphs share a 4.4 x 4.0 u box, origin-aligned; words share a 7.0 x 4.5 u
+// Unit glyphs share a 4.4 x 4.5 u box, origin-aligned; words share a 7.0 x 4.5 u
 // frame centred on the outline. That covers 99% of the lexicon; the few longer
 // outlines get a larger frame instead of clipping (and only they rescale).
-export const UNIT_VIEWBOX = [-1.9, -1.5, 4.4, 4.0];
+export const UNIT_VIEWBOX = [-1.9, -2.0, 4.4, 4.5];
 export const WORD_FRAME = [7.0, 4.5];
 
 export function referenceViewBox(outline, [frameW, frameH] = WORD_FRAME) {
