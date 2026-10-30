@@ -87,9 +87,9 @@ for (const [word, phones] of cmu) {
 real.sort((a, b) => a.rank - b.rank);
 
 // Start with the most useful words, then top up rare units so every unit has
-// enough practice material. 3,000 common words cover the whole inventory with
-// room for session variety.
-const TARGET = 3000;
+// enough practice material. 8,000 words give every phase a deep pool, not just
+// the late ones.
+const TARGET = 8000;
 const MIN_UNIT_WORDS = 12;
 const chosen = real.slice(0, TARGET).map(({ record }) => record);
 const chosenWords = new Set(chosen.map((record) => record.w));

@@ -184,7 +184,7 @@ material. The shipped app performs no network requests. The generation tool read
 ### 4.2 Generation steps
 
 1. **Select candidates.** Lowercase ASCII words, 2–12 letters, 1–3 syllables, no apostrophes or
-   hyphens in v1. Intersect CMUdict with the frequency list, then choose ~3,000 real words by
+   hyphens in v1. Intersect CMUdict with the frequency list, then choose ~8,000 real words by
    frequency plus per-unit and per-phase coverage top-ups. No synthetic spellings.
 2. **Get pronunciations.** CMUdict lookup, including variants. Choose the most common pronunciation;
    flag words with multiple pronunciations for audit.
