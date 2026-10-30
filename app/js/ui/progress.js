@@ -88,6 +88,7 @@ export function renderProgress(root, store) {
           <label><input type="radio" name="sort" value="attempts" ${view.sort === "attempts" ? "checked" : ""}><span>Most seen</span></label>
         </div>
       </div>
+      <p class="muted">One tile per stroke. The bar is mastery from your recent accuracy; the number is how many times you have seen it. Tap a tile to drill that stroke. Locked tiles open as you master the strokes before them.</p>
       <div class="mastery-grid">${rows
         .map(
           (row) => `<button class="mastery-cell${row.unlocked ? "" : " is-locked"}" data-unit="${escapeHtml(row.id)}" aria-label="${escapeHtml(row.label)}: ${percent(row.mastery)} mastery">
@@ -102,11 +103,13 @@ export function renderProgress(root, store) {
 
     <section class="module">
       <div class="module-head"><h2>Last 14 days</h2><span class="mono">${totalCorrect}/${totalItems} correct</span></div>
+      <p class="muted">Items you practised each day, newest on the right. Taller means more practice, not better scores.</p>
       ${volumeChart(sessions)}
     </section>
 
     <section class="module">
       <div class="module-head"><h2>History</h2><span class="mono">${sessions.length} sessions</span></div>
+      <p class="muted">Your last 12 sessions: date, track, correct answers, accuracy, and any new strokes unlocked.</p>
       ${historyList(sessions)}
     </section>
 

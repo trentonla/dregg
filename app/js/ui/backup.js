@@ -6,6 +6,7 @@ export function backupHtml(state, { compact = false } = {}) {
   return `<section class="module${compact ? " module--compact" : ""}">
     <div class="module-head"><h2>Backup</h2><span class="mono">${storage.available ? "Local" : "Unavailable"}</span></div>
     <p class="muted">${storage.lastSaved ? `Last saved ${escapeHtml(storage.lastSaved.slice(0, 16).replace("T", " "))}.` : "Nothing saved yet."} There is no cloud copy.</p>
+    <p class="muted">Export writes a JSON file you can keep or move to another device. Import replaces this device's progress with that file.</p>
     <div class="button-row">
       <button class="btn btn--secondary" data-export>Export backup</button>
       <button class="btn btn--secondary" data-import>Import backup</button>
