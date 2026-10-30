@@ -243,6 +243,7 @@ export function renderPractice(root, store) {
     state = store.getState();
     session = state.session;
   }
+  root.classList?.toggle("is-session", Boolean(session && !session.finished && session.items.length));
   if (!session || !session.items.length) {
     root.innerHTML = `<section class="practice"><div class="empty"><h2>No session yet.</h2><p>Start a short session from Today.</p><a class="btn btn--primary" href="#/today">Go to Today</a></div></section>`;
     return;
@@ -342,6 +343,7 @@ export function renderPractice(root, store) {
     if (!value.trim()) return;
     view.input = value;
     const result = gradeRead(value, item, LEXICON, READ_ANSWER_OVERRIDES);
+    input?.blur();
     submit(
       { ...result, note: noteFor(item, outline) },
       { correct: result.correct, answer: value },
@@ -351,6 +353,9 @@ export function renderPractice(root, store) {
     input.addEventListener("input", () => {
       view.input = input.value;
     });
+    const sessionEl = root.querySelector(".practice--session");
+    input.addEventListener("focus", () => sessionEl?.classList.add("is-typing"));
+    input.addEventListener("blur", () => sessionEl?.classList.remove("is-typing"));
   }
 
   for (const button of root.querySelectorAll("[data-option]")) {

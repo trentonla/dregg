@@ -343,7 +343,11 @@
     display: none;
   }
 
-  .is-practice .main:has(.practice--session) {
+  .is-practice .main {
+    padding-bottom: calc(var(--space-2) + env(safe-area-inset-bottom));
+  }
+
+  .is-practice .main.is-session {
     height: 100dvh;
     padding: calc(var(--space-2) + env(safe-area-inset-top)) var(--space-4)
       calc(var(--space-2) + env(safe-area-inset-bottom));
@@ -366,6 +370,14 @@
 
   .practice--session .practice-utility {
     flex: none;
+  }
+
+  .practice--session.is-typing .practice-utility {
+    display: none;
+  }
+
+  .practice--session.is-typing .outline-stage .outline {
+    height: min(26dvh, 210px);
   }
 
   .practice--session .stroke-reference-body {
@@ -437,6 +449,5 @@
   .practice--session .feedback .btn--wide {
     position: sticky;
     bottom: 0;
-    background: var(--paper);
   }
 }
