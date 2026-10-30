@@ -1,6 +1,6 @@
 // Progress: mastery grid, curriculum stages, recent volume, session history, backup.
 import { activePhases } from "../curriculum.js";
-import { isUnitUnlocked } from "../engine.js";
+import { UNLOCK_ATTEMPTS, UNLOCK_MASTERY, isUnitUnlocked, masterySummary } from "../engine.js";
 import { escapeHtml, pageHeader, percent, unitGlyph, unitLabel } from "./components.js";
 import { backupHtml, wireBackup } from "./backup.js";
 
@@ -21,20 +21,31 @@ const STAGE_NOTES = {
 };
 
 function stageList(state) {
-  const phases = activePhases(state.track).map((phase) => {
-    const unlocked = new Set(phase.units.filter((id) => isUnitUnlocked(state.progress, id, state.track)));
-    return { ...phase, unlocked, complete: unlocked.size === phase.units.length };
+  const active = activePhases(state.track);
+  const activeNumbers = new Set(active.map((phase) => phase.number));
+  const mastered = new Set(
+    masterySummary(state.progress, state.track).rows
+      .filter((row) => row.unlocked && row.attempts >= UNLOCK_ATTEMPTS && row.mastery >= UNLOCK_MASTERY)
+      .map((row) => row.id),
+  );
+  const phases = activePhases("precision").map((phase) => {
+    const inTrack = activeNumbers.has(phase.number);
+    const unlocked = new Set(
+      inTrack ? phase.units.filter((id) => isUnitUnlocked(state.progress, id, state.track)) : [],
+    );
+    return { ...phase, inTrack, unlocked, complete: inTrack && phase.units.every((id) => mastered.has(id)) };
   });
-  const current = phases.find((phase) => !phase.complete)?.number ?? null;
+  const current = active.find((phase) => !phases.find((entry) => entry.number === phase.number)?.complete)?.number ?? null;
   return `<ol class="phase-list">${phases
     .map((phase) => {
-      const status = phase.complete ? "done" : phase.number === current ? "current" : "locked";
+      const status = !phase.inTrack ? "skipped" : phase.complete ? "done" : phase.number === current ? "current" : "locked";
       return `<li class="phase-row is-${status}">
         <div class="phase-head">
           <span class="mono">Phase ${phase.number}</span>
           <h3>${escapeHtml(phase.name)}</h3>
           ${status === "current" ? `<span class="badge">Current</span>` : ""}
           ${status === "done" ? `<span class="badge badge--ok">Done</span>` : ""}
+          ${status === "skipped" ? `<span class="badge">Precision only</span>` : ""}
         </div>
         <p class="muted">${escapeHtml(STAGE_NOTES[phase.number] || "")}</p>
         <div class="chip-row">${phase.units
@@ -145,8 +156,8 @@ export function renderProgress(root, store) {
     </section>
 
     <section class="module">
-      <div class="module-head"><h2>Stages</h2><span class="mono">${activePhases(state.track).length} phases</span></div>
-      <p class="muted">Strokes unlock a phase at a time, in this order. A phase opens when the ones before it are mastered.${state.track === "core" ? " Core skips the two Precision vowel phases; switch tracks in Settings to see them." : ""}</p>
+      <div class="module-head"><h2>Stages</h2><span class="mono">${activePhases(state.track).length} phases${state.track === "core" ? ` · ${activePhases("precision").length - activePhases(state.track).length} precision-only` : ""}</span></div>
+      <p class="muted">A phase is done when every stroke in it is mastered; the next one opens after that.${state.track === "core" ? " Core skips the two Precision vowel phases. They are listed below but only run on the Precision track, which opens once every Core stroke is unlocked." : ""}</p>
       ${stageList(state)}
     </section>
 

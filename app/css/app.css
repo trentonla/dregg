@@ -561,6 +561,10 @@
   opacity: 0.55;
 }
 
+.phase-row.is-skipped {
+  opacity: 0.5;
+}
+
 .phase-head {
   display: flex;
   flex-wrap: wrap;

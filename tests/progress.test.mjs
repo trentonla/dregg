@@ -34,14 +34,17 @@ function render(track) {
   return root.innerHTML;
 }
 
-test("progress stages list the curriculum in order and mark the current phase", () => {
+test("progress stages start at phase 1 and show precision-only phases as skipped", () => {
   const html = render("core");
   assert.match(html, /Phase 1/);
   assert.match(html, /Foundations/);
   assert.match(html, /class="phase-row is-current"/);
-  // Core skips the two Precision vowel phases.
-  assert.doesNotMatch(html, /Precision I/);
-  assert.doesNotMatch(html, /Precision II/);
+  // Unlocking a phase's strokes is not mastery: phase 1 stays current.
+  assert.match(html, /Phase 1<\/span>\s*<h3>Foundations<\/h3>\s*<span class="badge">Current/);
+  // The precision vowel phases are listed but skipped in core.
+  assert.match(html, /Precision I/);
+  assert.match(html, /Precision II/);
+  assert.match(html, /class="phase-row is-skipped"/);
   assert.match(html, /Phase 10/);
   assert.match(html, /Fluency/);
 });
