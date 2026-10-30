@@ -163,52 +163,60 @@ function feedbackHtml(item, outline, total, blends) {
     const answerUnit = UNIT_BY_ID[answerId];
     const chosenUnit = UNIT_BY_ID[feedback?.answer];
     return `<div class="feedback ${correct ? "feedback--correct" : "feedback--wrong"}" role="status" aria-live="polite">
-      <p class="feedback-title">${correct ? "Correct." : "Not quite."}</p>
-      <div class="drill-result">
-        <div class="outline-stage">${unitGlyph(answerId, item.track, { className: "glyph glyph--drill" })}</div>
-        <div>
-          <p class="feedback-word">${escapeHtml(answerUnit?.label || answerId)}</p>
-          <p class="feedback-note">${escapeHtml(answerUnit?.description || "")}</p>
+      <div class="feedback-body">
+        <p class="feedback-title">${correct ? "Correct." : "Not quite."}</p>
+        <div class="drill-result">
+          <div class="outline-stage">${unitGlyph(answerId, item.track, { className: "glyph glyph--drill" })}</div>
+          <div>
+            <p class="feedback-word">${escapeHtml(answerUnit?.label || answerId)}</p>
+            <p class="feedback-note">${escapeHtml(answerUnit?.description || "")}</p>
+          </div>
         </div>
+        ${!correct && chosenUnit ? `<p class="muted">You chose ${escapeHtml(chosenUnit.label)}.</p>` : ""}
       </div>
-      ${!correct && chosenUnit ? `<p class="muted">You chose ${escapeHtml(chosenUnit.label)}.</p>` : ""}
-      <button class="btn btn--primary btn--wide" data-next>${item.index >= total - 1 ? "Finish" : "Next"}</button>
+      <div class="feedback-actions">
+        <button class="btn btn--primary btn--wide" data-next>${item.index >= total - 1 ? "Finish" : "Next"}</button>
+      </div>
     </div>`;
   }
   const accepted = feedback?.accepted?.filter((word) => word !== item.word.w) || [];
   return `<div class="feedback ${correct ? "feedback--correct" : "feedback--wrong"}" role="status" aria-live="polite">
-    <p class="feedback-title">${correct ? "Correct." : "Not quite."}</p>
-    <p class="feedback-word">${escapeHtml(item.word.w)}</p>
-    ${phonemes(item.word)}
-    <div class="feedback-outline">${outlineSvg(outlineForWord(item.word, item.track, { blends }), { className: "outline outline--large", label: item.word.w, viewBox: referenceViewBox(outline) })}</div>
-    ${breakdown(item.units, item.track)}
-    <p class="feedback-note">${escapeHtml(noteFor(item, outline))}</p>
-    ${
-      feedback?.score !== undefined && feedback?.score !== null
-        ? `<p class="mono">Trace match: ${percent(feedback.score)}</p>`
-        : ""
-    }
-    ${
-      feedback?.issues?.length
-        ? `<ul class="issue-list">${feedback.issues.map((issue) => `<li>${escapeHtml(issue)}</li>`).join("")}</ul>`
-        : ""
-    }
-    ${!correct && accepted.length ? `<p class="muted">Also accepted: ${accepted.map(escapeHtml).join(", ")}</p>` : ""}
-    ${!correct && !accepted.length ? `<p class="muted">The answer is ${escapeHtml(item.word.w)}.</p>` : ""}
-    ${
-      item.mode === "read"
-        ? `<div class="button-row">
-            <button class="btn btn--secondary" data-override-correct>Mark as correct</button>
-            <button class="btn btn--ghost" data-override-wrong>Mark as wrong</button>
-          </div>`
-        : ""
-    }
-    ${
-      item.mode === "trace" && !correct
-        ? `<button class="btn btn--secondary" data-retry>Try again (this attempt counted)</button>`
-        : ""
-    }
-    <button class="btn btn--primary btn--wide" data-next>${item.index >= total - 1 ? "Finish" : "Next"}</button>
+    <div class="feedback-body">
+      <p class="feedback-title">${correct ? "Correct." : "Not quite."}</p>
+      <p class="feedback-word">${escapeHtml(item.word.w)}</p>
+      ${phonemes(item.word)}
+      <div class="feedback-outline">${outlineSvg(outlineForWord(item.word, item.track, { blends }), { className: "outline outline--large", label: item.word.w, viewBox: referenceViewBox(outline) })}</div>
+      ${breakdown(item.units, item.track)}
+      <p class="feedback-note">${escapeHtml(noteFor(item, outline))}</p>
+      ${
+        feedback?.score !== undefined && feedback?.score !== null
+          ? `<p class="mono">Trace match: ${percent(feedback.score)}</p>`
+          : ""
+      }
+      ${
+        feedback?.issues?.length
+          ? `<ul class="issue-list">${feedback.issues.map((issue) => `<li>${escapeHtml(issue)}</li>`).join("")}</ul>`
+          : ""
+      }
+      ${!correct && accepted.length ? `<p class="muted">Also accepted: ${accepted.map(escapeHtml).join(", ")}</p>` : ""}
+      ${!correct && !accepted.length ? `<p class="muted">The answer is ${escapeHtml(item.word.w)}.</p>` : ""}
+    </div>
+    <div class="feedback-actions">
+      ${
+        item.mode === "read"
+          ? `<div class="button-row">
+              <button class="btn btn--secondary" data-override-correct>Mark as correct</button>
+              <button class="btn btn--ghost" data-override-wrong>Mark as wrong</button>
+            </div>`
+          : ""
+      }
+      ${
+        item.mode === "trace" && !correct
+          ? `<button class="btn btn--secondary" data-retry>Try again (this attempt counted)</button>`
+          : ""
+      }
+      <button class="btn btn--primary btn--wide" data-next>${item.index >= total - 1 ? "Finish" : "Next"}</button>
+    </div>
   </div>`;
 }
 

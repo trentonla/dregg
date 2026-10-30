@@ -229,6 +229,18 @@
   border-top: 1px solid var(--line);
 }
 
+.feedback-body {
+  display: grid;
+  gap: var(--space-3);
+  justify-items: start;
+}
+
+.feedback-actions {
+  display: grid;
+  gap: var(--space-2);
+  width: 100%;
+}
+
 .feedback-title {
   font-family: var(--font-serif);
   font-size: var(--text-h3);
@@ -413,7 +425,7 @@
   .practice--session .stage--trace .canvas-wrap--trace {
     flex: 1 1 auto;
     height: auto;
-    min-height: 34dvh;
+    min-height: 0;
   }
 
   .practice--session .answer {
@@ -432,7 +444,7 @@
   .practice--session .answer--write .canvas-wrap {
     flex: 1 1 auto;
     height: auto;
-    min-height: 36dvh;
+    min-height: 0;
   }
 
   .practice--session .answer--write .canvas-tools {
@@ -440,14 +452,15 @@
   }
 
   .practice--session .feedback {
+    display: grid;
     flex: 1 1 auto;
+    grid-template-rows: minmax(0, 1fr) auto;
     min-height: 0;
     padding-top: var(--space-2);
-    overflow-y: auto;
+    overflow: hidden;
   }
 
-  .practice--session .feedback .btn--wide {
-    position: sticky;
-    bottom: 0;
+  .practice--session .feedback-body {
+    overflow-y: auto;
   }
 }

@@ -39,6 +39,7 @@ export async function initOffline({ onReady, onUpdate, onStatus } = {}) {
   try {
     const registration = await navigator.serviceWorker.register(new URL("../sw.js", import.meta.url), {
       scope: new URL("../", import.meta.url).pathname,
+      updateViaCache: "none",
     });
 
     registration.addEventListener("updatefound", () => {
