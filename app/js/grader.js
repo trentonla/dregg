@@ -1,6 +1,7 @@
 // Answer normalization and trace similarity. Pure functions; no DOM.
 import { resolveUnits } from "./combinations.js";
 import { UNIT_BY_ID } from "./units.js";
+import { ALIASES } from "./data/aliases.js";
 
 export function normalizeAnswer(value) {
   return String(value ?? "")
@@ -39,6 +40,10 @@ export function acceptedAnswers(item, lexicon = [], overrides = {}) {
   const accepted = lexicon
     .filter((record) => sameUnits(drawnFor(record, track, blends), units))
     .map((record) => record.w);
+  // Spellings outside the practice lexicon whose outline still matches.
+  for (const word of ALIASES[item.word?.w]?.[track === "core" ? "core" : "full"] || []) {
+    if (!accepted.includes(word)) accepted.push(word);
+  }
   const manual = [...(overrides?.[item.word?.w] || []), ...(READ_ANSWER_OVERRIDES[item.word?.w] || [])];
   for (const word of manual) if (word && !accepted.includes(word)) accepted.push(word);
   if (item.word?.w && !accepted.includes(item.word.w)) accepted.unshift(item.word.w);

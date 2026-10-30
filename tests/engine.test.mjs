@@ -71,8 +71,21 @@ test("read grading accepts Gregg homophones", () => {
   const item = { track: "precision", word: record, units: record.full };
   assert.equal(gradeRead("right", item, LEXICON).correct, true);
   assert.equal(gradeRead("write", item, LEXICON).correct, true);
-  assert.equal(gradeRead("rite", item, LEXICON).correct, false);
+  assert.equal(gradeRead("rite", item, LEXICON).correct, true);
   assert.equal(gradeRead("", item, LEXICON).correct, false);
+});
+
+test("read grading only demands the precision the track marks", () => {
+  const dead = LEXICON_BY_WORD.dead;
+  const core = { track: "core", word: dead, units: dead.core };
+  const precision = { track: "precision", word: dead, units: dead.full };
+  // Core has one e shape, so deed and did draw the same outline as dead.
+  assert.equal(gradeRead("dead", core, LEXICON).correct, true);
+  assert.equal(gradeRead("deed", core, LEXICON).correct, true);
+  assert.equal(gradeRead("did", core, LEXICON).correct, true);
+  // Precision marks the vowel, so those spellings are different outlines.
+  assert.equal(gradeRead("deed", precision, LEXICON).correct, false);
+  assert.equal(gradeRead("did", precision, LEXICON).correct, false);
 });
 
 test("read grading resolves homophones with the item's blends", () => {

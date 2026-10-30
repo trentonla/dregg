@@ -233,6 +233,8 @@ function feedbackHtml(item, outline, total, blends) {
     </div>`;
   }
   const accepted = feedback?.accepted?.filter((word) => word !== item.word.w) || [];
+  const shown = accepted.slice(0, 4);
+  const extra = accepted.length - shown.length;
   return `<div class="feedback ${correct ? "feedback--correct" : "feedback--wrong"}" role="status" aria-live="polite">
     <div class="feedback-body">
       <p class="feedback-title">${correct ? "Correct." : "Not quite."}</p>
@@ -251,7 +253,7 @@ function feedbackHtml(item, outline, total, blends) {
           ? `<ul class="issue-list">${feedback.issues.map((issue) => `<li>${escapeHtml(issue)}</li>`).join("")}</ul>`
           : ""
       }
-      ${!correct && accepted.length ? `<p class="muted">Also accepted: ${accepted.map(escapeHtml).join(", ")}</p>` : ""}
+      ${!correct && accepted.length ? `<p class="muted">Also accepted: ${shown.map(escapeHtml).join(", ")}${extra > 0 ? ` and ${extra} more` : ""}</p>` : ""}
       ${!correct && !accepted.length ? `<p class="muted">The answer is ${escapeHtml(item.word.w)}.</p>` : ""}
     </div>
     <div class="feedback-actions">
