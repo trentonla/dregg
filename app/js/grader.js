@@ -2,6 +2,7 @@
 import { resolveUnits } from "./combinations.js";
 import { UNIT_BY_ID } from "./units.js";
 import { ALIASES } from "./data/aliases.js";
+import { briefById } from "./briefs.js";
 
 export function normalizeAnswer(value) {
   return String(value ?? "")
@@ -42,6 +43,10 @@ export function acceptedAnswers(item, lexicon = [], overrides = {}) {
     .map((record) => record.w);
   // Spellings outside the practice lexicon whose outline still matches.
   for (const word of ALIASES[item.word?.w]?.[track === "core" ? "core" : "full"] || []) {
+    if (!accepted.includes(word)) accepted.push(word);
+  }
+  // A brief form covers every word the manual lists under it: to/too/two.
+  for (const word of briefById(item.brief)?.words || []) {
     if (!accepted.includes(word)) accepted.push(word);
   }
   const manual = [...(overrides?.[item.word?.w] || []), ...(READ_ANSWER_OVERRIDES[item.word?.w] || [])];

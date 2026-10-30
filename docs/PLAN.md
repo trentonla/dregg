@@ -23,6 +23,8 @@ Known v1 simplifications, relative to the milestone text below:
 - The lexicon is 2,005 real words, not the 1,000–1,500 originally budgeted. It still fits the gzip
   budget (about 37KB).
 - Precision is reachable after every Core unit is unlocked, not after a separate precision phase.
+- Brief forms: four high-frequency forms (*the, and, of, to*) are stored as strokes and drilled from
+  Today and the Chart. The rest of the manual's brief-form list is still post-v1.
 
 ---
 

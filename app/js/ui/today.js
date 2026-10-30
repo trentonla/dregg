@@ -1,5 +1,6 @@
 // Today: one primary action, a thin mastery line, weak spots, and a streak.
 import { escapeHtml, pageHeader, percent, progressBar, ring, unitGlyph, unitLabel } from "./components.js";
+import { availableBriefs } from "../engine.js";
 
 function todayKey() {
   return new Date().toISOString().slice(0, 10);
@@ -14,6 +15,7 @@ export function renderToday(root, store) {
   const sessionsToday = state.progress.sessions.filter((session) => String(session.date).slice(0, 10) === todayKey()).length;
   const streak = state.progress.streak || { current: 0, best: 0 };
   const resume = Boolean(state.session && !state.session.finished && state.session.results.length);
+  const briefs = availableBriefs(state.progress, state.track);
 
   const status = unlock
     ? `${unitLabel(unlock)} is ready to unlock.`
@@ -42,6 +44,16 @@ export function renderToday(root, store) {
           <p class="muted">Best: ${streak.best}. Goal: ${state.settings.dailyGoal} min.</p>
           <p class="muted">${sessionsToday ? `${sessionsToday} session${sessionsToday === 1 ? "" : "s"} today.` : "No session yet today."}</p>
         </section>
+
+        ${
+          briefs.length
+            ? `<section class="module">
+          <div class="module-head"><h2>Brief forms</h2><span class="mono">${briefs.length} ready</span></div>
+          <p class="muted">${briefs.map((brief) => escapeHtml(brief.words[0])).join(", ")}</p>
+          <button class="btn btn--secondary btn--wide" data-briefs>Drill brief forms</button>
+        </section>`
+            : ""
+        }
 
         <section class="module">
           <div class="module-head"><h2>Weak spots</h2><a class="text-link" href="#/chart">Chart</a></div>
@@ -77,4 +89,5 @@ export function renderToday(root, store) {
   for (const button of root.querySelectorAll("[data-unit]")) {
     button.addEventListener("click", () => store.practiceUnit(button.dataset.unit));
   }
+  root.querySelector("[data-briefs]")?.addEventListener("click", () => store.startBriefSession());
 }

@@ -393,9 +393,9 @@ Notes:
   shown with the base sign and the marked sign, and the learner chooses the precise one.
 - The default path is **Core → Precision**. A “Precision from the start” option is deferred; the
   unit model supports it later, but onboarding does not present it in v1.
-- Brief forms are deliberately excluded from v1: they are memorized abbreviations, not generated
-  from strokes, and mixing them in breaks the “write what you hear” model. The unit model reserves
-  space for them.
+- Brief forms are memorized abbreviations, not generated from strokes. Four high-frequency forms
+  (*the, and, of, to*) are stored as strokes and drilled separately from the generated word mix; the
+  rest of the manual's list is still post-v1.
 
 ### 7.4 Lexicon and item generation
 

@@ -8,6 +8,7 @@ import {
   sanitizeSettings,
 } from "./storage.js";
 import {
+  createBriefSession,
   createSession,
   canonicalUnit,
   ensureProgress,
@@ -183,6 +184,23 @@ export function createStore({ storage = createStorage(), lexicon = LEXICON, now 
         return true;
       }
       return false;
+    },
+    startBriefSession() {
+      const session = createBriefSession({
+        progress: state.progress,
+        track: state.track,
+        seed: Date.now(),
+        now: now(),
+      });
+      if (!session.items.length) {
+        api.toast("Brief forms unlock with the strokes they use.");
+        return false;
+      }
+      state.session = session;
+      state.route = "practice";
+      if (typeof location !== "undefined") location.hash = "#/practice";
+      emit();
+      return true;
     },
     practiceUnit(unitId) {
       if (!isUnitUnlocked(state.progress, unitId, state.track)) {

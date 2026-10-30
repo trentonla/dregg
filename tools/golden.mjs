@@ -9,6 +9,7 @@ import path from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { UNIT_FRAME, outlineForUnit, outlineForWord, outlineSvg, referenceViewBox, renderOutline } from "../app/js/outline.js";
 import { LEXICON_BY_WORD } from "../app/js/data/lexicon.js";
+import { BRIEF_FORMS, outlineForBrief } from "../app/js/briefs.js";
 import { CONSONANTS, VOWELS, DIPHTHONGS, GLIDES, BLENDS, UNIT_BY_ID } from "../app/js/units.js";
 
 const here = path.dirname(fileURLToPath(import.meta.url));
@@ -34,6 +35,10 @@ export function goldenSamples() {
     if (!record) throw new Error(`Golden word missing from lexicon: ${word}`);
     const outline = outlineForWord(record, "precision");
     samples.push({ name: `word-${word}`, svg: outlineSvg(outline, { label: word, viewBox: referenceViewBox(outline) }) });
+  }
+  for (const brief of BRIEF_FORMS) {
+    const outline = outlineForBrief(brief, "precision");
+    samples.push({ name: `brief-${brief.id}`, svg: outlineSvg(outline, { label: brief.words[0], viewBox: referenceViewBox(outline) }) });
   }
   return samples;
 }
@@ -96,6 +101,12 @@ function sheet() {
     .join("")}</div>
   <h2>Words</h2>
   <table><thead><tr><th>Word</th><th>Units</th><th>Outline</th></tr></thead><tbody>${words}</tbody></table>
+  <h2>Brief forms</h2>
+  <p class="note">Memorized whole-word abbreviations (Ann §23). They are stored as strokes, not generated from sounds.</p>
+  <table><thead><tr><th>Words</th><th>Strokes</th><th>Outline</th></tr></thead><tbody>${BRIEF_FORMS.map((brief) => {
+    const outline = outlineForBrief(brief, "precision");
+    return `<tr><td>${brief.words.join(" / ")}</td><td class="units">${brief.units.join(" ")}</td><td class="art">${outlineSvg(outline, { label: brief.words[0], viewBox: referenceViewBox(outline) })}</td></tr>`;
+  }).join("")}</tbody></table>
 </body></html>`;
 }
 

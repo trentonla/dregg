@@ -6,6 +6,7 @@ import { activePhases } from "./curriculum.js";
 import { LEXICON } from "./data/lexicon.js";
 import { createRng } from "./rng.js";
 import { gradeDrill, gradeRead } from "./grader.js";
+import { BRIEF_FORMS, briefRecord } from "./briefs.js";
 
 export const EMA_ALPHA = 0.3;
 export const UNLOCK_ATTEMPTS = 8;
@@ -286,6 +287,55 @@ export function createSession({
     startedAt: now,
     focusUnit: focus,
     unlockCandidate: unlockReady(progress, track),
+    finished: false,
+  };
+}
+
+// Brief forms unlock with the strokes they are built from, not with a phase of
+// their own. "and" falls back to n + d until the nd blend is unlocked.
+export function availableBriefs(progress, track = "core", blends = unlockedBlends(progress, track)) {
+  return BRIEF_FORMS.filter((brief) => {
+    const units = resolveUnits(brief.units, brief.words[0], { blends }).units;
+    return units.every((unit) => isUnitUnlocked(progress, canonicalUnit(unit), track));
+  });
+}
+
+// A short, fixed session: each available brief is read, then written. Brief
+// forms are recognition and recall, so they do not enter the weighted word mix.
+export function createBriefSession({
+  progress,
+  track = "core",
+  seed = Date.now(),
+  now = new Date().toISOString(),
+} = {}) {
+  const blends = unlockedBlends(progress, track);
+  const items = [];
+  for (const brief of availableBriefs(progress, track, blends)) {
+    const word = briefRecord(brief, { blends });
+    for (const mode of ["read", "write"]) {
+      items.push({
+        id: `${seed}-${items.length}`,
+        index: items.length,
+        word,
+        mode,
+        track,
+        focusUnit: null,
+        units: word.core,
+        brief: brief.id,
+      });
+    }
+  }
+  return {
+    id: `s-${seed}`,
+    seed,
+    track,
+    blends: [...blends],
+    items,
+    index: 0,
+    results: [],
+    startedAt: now,
+    focusUnit: null,
+    unlockCandidate: null,
     finished: false,
   };
 }

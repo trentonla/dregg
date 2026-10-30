@@ -4,6 +4,7 @@ import { LEXICON } from "../data/lexicon.js";
 import { outlineForWord, outlineSvg, referenceViewBox } from "../outline.js";
 import { gradeDrill, gradeRead, traceScore, READ_ANSWER_OVERRIDES } from "../grader.js";
 import { isUnitUnlocked, recommendation, trackUnits } from "../engine.js";
+import { briefById } from "../briefs.js";
 import { mountCanvas } from "../draw/canvas.js";
 import { animateOutline } from "../draw/animate.js";
 import { scoreTrace, traceGhost } from "../draw/trace.js";
@@ -70,6 +71,8 @@ function formatDuration(ms) {
 
 function noteFor(item, outline) {
   if (item.mode === "drill") return UNIT_BY_ID[item.drill?.answer]?.description || "";
+  const brief = briefById(item.brief);
+  if (brief) return brief.hint;
   const units = (item.units || []).map(unitLabel).join(" · ");
   const contraction = outline.contractions?.map((entry) => entry.note).filter(Boolean).join(" ");
   const placement =
