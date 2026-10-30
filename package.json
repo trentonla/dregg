@@ -8,6 +8,7 @@
     "test": "node --test tests/",
     "coverage": "node tools/coverage.mjs",
     "audit": "node tools/audit-lexicon.mjs",
+    "audit:outlines": "node tools/audit-outlines.mjs",
     "golden": "node tools/golden.mjs",
     "golden:check": "node tools/golden.mjs --check",
     "lexicon": "node tools/build-lexicon.mjs",
