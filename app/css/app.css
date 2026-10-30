@@ -351,16 +351,54 @@
 }
 
 .chart-side {
-  order: -1;
+  order: 1;
 }
 
 .chart-detail {
+  position: relative;
   display: grid;
   gap: var(--space-3);
   padding: var(--space-4);
   border: 1px solid var(--line);
   border-radius: var(--radius);
   background: var(--surface);
+}
+
+.chart-close {
+  position: absolute;
+  top: var(--space-2);
+  right: var(--space-2);
+  width: 2rem;
+  height: 2rem;
+  border: 0;
+  border-radius: 50%;
+  background: var(--paper);
+  color: var(--muted);
+  font-size: 1.25rem;
+  line-height: 1;
+}
+
+/* On phones the detail is a sheet over the chart, so the tapped stroke is
+   never scrolled away from its info. */
+@media (max-width: 899px) {
+  .chart-side.is-open {
+    position: fixed;
+    inset: 0;
+    z-index: 40;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    padding: var(--space-3);
+    background: rgb(0 0 0 / 0.35);
+  }
+
+  .chart-side.is-open .chart-detail {
+    width: 100%;
+    max-width: 28rem;
+    max-height: 80vh;
+    overflow-y: auto;
+    padding-bottom: calc(var(--space-4) + env(safe-area-inset-bottom));
+  }
 }
 
 .chart-detail-head {
@@ -489,8 +527,11 @@
   height: 2.75rem;
 }
 
-.mastery-cell .bar {
-  height: 4px;
+.mastery-stats {
+  display: flex;
+  gap: var(--space-2);
+  align-items: baseline;
+  font-size: var(--text-xs);
 }
 
 .mastery-attempts {

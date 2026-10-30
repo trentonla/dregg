@@ -146,6 +146,24 @@ export function createStore({ storage = createStorage(), lexicon = LEXICON, now 
       return state.session?.items?.[state.session.index] || null;
     },
     startSession({ focusUnit = null } = {}) {
+      const session = api.ensureSession({ focusUnit });
+      if (!session) {
+        api.toast("No eligible words yet. Try another track.");
+        return null;
+      }
+      state.route = "practice";
+      if (typeof location !== "undefined") location.hash = "#/practice";
+      save();
+      emit();
+      return session;
+    },
+    // Create a session in place, without navigating or notifying listeners, so
+    // opening Practice can start one that stays invisible until it is answered.
+    ensureSession({ focusUnit = null } = {}) {
+      const wanted = focusUnit ? canonicalUnit(focusUnit) : null;
+      if (state.session && !state.session.finished && state.session.items.length && (!wanted || state.session.focusUnit === wanted)) {
+        return state.session;
+      }
       const session = createSession({
         progress: state.progress,
         lexicon,
@@ -155,15 +173,8 @@ export function createStore({ storage = createStorage(), lexicon = LEXICON, now 
         now: now(),
         focusUnit,
       });
-      if (!session.items.length) {
-        api.toast("No eligible words yet. Try another track.");
-        return null;
-      }
+      if (!session.items.length) return null;
       state.session = session;
-      state.route = "practice";
-      if (typeof location !== "undefined") location.hash = "#/practice";
-      save();
-      emit();
       return session;
     },
     resumeSession() {

@@ -744,10 +744,11 @@ export function segmentsForTrace(outline) {
 }
 
 // One frame per context so stroke lengths stay comparable at a glance.
-// Unit glyphs share a 4.4 x 4.5 u box, origin-aligned; words share a 7.0 x 4.5 u
-// frame centred on the outline. That covers 99% of the lexicon; the few longer
-// outlines get a larger frame instead of clipping (and only they rescale).
-export const UNIT_VIEWBOX = [-1.9, -2.0, 4.4, 4.5];
+// Unit glyphs share a 4.4 x 4.5 u box centred on the glyph; words share a
+// 7.0 x 4.5 u frame centred on the outline. That covers 99% of the lexicon;
+// the few longer outlines get a larger frame instead of clipping (and only
+// they rescale).
+export const UNIT_FRAME = [4.4, 4.5];
 export const WORD_FRAME = [7.0, 4.5];
 
 export function referenceViewBox(outline, [frameW, frameH] = WORD_FRAME) {

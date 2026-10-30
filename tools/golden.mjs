@@ -7,7 +7,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
-import { UNIT_VIEWBOX, outlineForUnit, outlineForWord, outlineSvg, referenceViewBox, renderOutline } from "../app/js/outline.js";
+import { UNIT_FRAME, outlineForUnit, outlineForWord, outlineSvg, referenceViewBox, renderOutline } from "../app/js/outline.js";
 import { LEXICON_BY_WORD } from "../app/js/data/lexicon.js";
 import { CONSONANTS, VOWELS, DIPHTHONGS, GLIDES, BLENDS, UNIT_BY_ID } from "../app/js/units.js";
 
@@ -19,13 +19,15 @@ const sheetPath = path.join(root, "docs", "outline-sheet.html");
 export const GOLDEN_UNITS = ["t", "d", "n", "m", "a1", "e1", "o1", "u1", "ai", "ng", "w", "blend-ten"];
 export const GOLDEN_WORDS = ["team", "running", "people", "machine", "think", "boy", "use", "we", "yes", "hot", "art", "near", "tears", "job", "box"];
 
+function unitSvg(id, track = "precision") {
+  const outline = outlineForUnit(id, track);
+  return outlineSvg(outline, { label: UNIT_BY_ID[id]?.label || id, viewBox: referenceViewBox(outline, UNIT_FRAME) });
+}
+
 export function goldenSamples() {
   const samples = [];
   for (const id of GOLDEN_UNITS) {
-    samples.push({
-      name: `unit-${id}`,
-      svg: outlineSvg(outlineForUnit(id, "precision"), { label: UNIT_BY_ID[id]?.label || id, viewBox: UNIT_VIEWBOX }),
-    });
+    samples.push({ name: `unit-${id}`, svg: unitSvg(id) });
   }
   for (const word of GOLDEN_WORDS) {
     const record = LEXICON_BY_WORD[word];
@@ -40,7 +42,7 @@ function grid(ids, track = "precision") {
   return `<div class="grid">${ids
     .map(
       (id) =>
-        `<figure><div class="art">${outlineSvg(outlineForUnit(id, track), { label: UNIT_BY_ID[id]?.label || id, viewBox: UNIT_VIEWBOX })}</div><figcaption>${UNIT_BY_ID[id]?.label || id}<small>${id}</small></figcaption></figure>`,
+        `<figure><div class="art">${unitSvg(id, track)}</div><figcaption>${UNIT_BY_ID[id]?.label || id}<small>${id}</small></figcaption></figure>`,
     )
     .join("")}</div>`;
 }

@@ -1,5 +1,5 @@
 // Small render helpers shared by screens. Strings only; no framework.
-import { UNIT_VIEWBOX, outlineForUnit, outlineForWord, outlineSvg, referenceViewBox } from "../outline.js";
+import { UNIT_FRAME, outlineForUnit, outlineForWord, outlineSvg, referenceViewBox } from "../outline.js";
 import { unitFor } from "../units.js";
 
 export function escapeHtml(value) {
@@ -15,8 +15,13 @@ export function unitLabel(id) {
   return unitFor(id)?.label || id;
 }
 
-export function unitGlyph(id, track = "core", { className = "glyph", label = unitLabel(id), viewBox = UNIT_VIEWBOX } = {}) {
-  return outlineSvg(outlineForUnit(id, track), { className, label, viewBox });
+export function unitGlyph(id, track = "core", { className = "glyph", label = unitLabel(id), viewBox } = {}) {
+  const outline = outlineForUnit(id, track);
+  return outlineSvg(outline, {
+    className,
+    label,
+    viewBox: viewBox === undefined ? referenceViewBox(outline, UNIT_FRAME) : viewBox,
+  });
 }
 
 export function wordOutline(record, track = "core", { className = "outline outline--large", label, viewBox, ...options } = {}) {

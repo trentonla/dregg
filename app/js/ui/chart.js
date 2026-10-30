@@ -39,7 +39,8 @@ function detail(id, state) {
       : unlocked
         ? "Unlocked."
         : `Locked. Introduced in phase ${phase}.`;
-  return `<aside class="chart-detail" aria-live="polite">
+  return `<aside class="chart-detail" role="dialog" aria-label="${escapeHtml(unit.label)}" aria-live="polite">
+    <button class="chart-close" data-close aria-label="Close">×</button>
     <div class="chart-detail-head">
       <div class="chart-detail-glyph">${unitGlyph(id, "precision", { className: "glyph glyph--hero" })}</div>
       <div>
@@ -87,7 +88,7 @@ export function renderChart(root, store) {
         ${group("Blends", BLENDS.map((unit) => unit.id), current, selected)}
         <p class="muted">${locked} stroke${locked === 1 ? "" : "s"} still locked in this track.</p>
       </div>
-      <div class="chart-side">${selected ? detail(selected, current) : `<p class="muted chart-hint">Tap a stroke to see its name, sound, and phase.</p>`}</div>
+      <div class="chart-side${selected ? " is-open" : ""}">${selected ? detail(selected, current) : `<p class="muted chart-hint">Tap a stroke to see its name, sound, and phase.</p>`}</div>
     </div>`;
 
     for (const button of root.querySelectorAll("[data-unit]")) {
@@ -98,6 +99,15 @@ export function renderChart(root, store) {
     }
     root.querySelector("[data-practice]")?.addEventListener("click", (event) => {
       store.practiceUnit(event.currentTarget.dataset.practice);
+    });
+    const close = () => {
+      selected = null;
+      render();
+    };
+    root.querySelector("[data-close]")?.addEventListener("click", close);
+    const side = root.querySelector(".chart-side");
+    side?.addEventListener("click", (event) => {
+      if (event.target === side) close();
     });
   }
 

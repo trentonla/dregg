@@ -13,7 +13,7 @@ export function renderToday(root, store) {
   const unlock = store.unlockReady();
   const sessionsToday = state.progress.sessions.filter((session) => String(session.date).slice(0, 10) === todayKey()).length;
   const streak = state.progress.streak || { current: 0, best: 0 };
-  const resume = Boolean(state.session && !state.session.finished && state.session.items.length);
+  const resume = Boolean(state.session && !state.session.finished && state.session.results.length);
 
   const status = unlock
     ? `${unitLabel(unlock)} is ready to unlock.`

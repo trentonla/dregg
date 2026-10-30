@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { UNIT_VIEWBOX, referenceViewBox, renderOutline, outlineForUnit, outlineForWord, outlineSvg } from "../app/js/outline.js";
+import { UNIT_FRAME, referenceViewBox, renderOutline, outlineForUnit, outlineForWord, outlineSvg } from "../app/js/outline.js";
 import { LEXICON, LEXICON_BY_WORD } from "../app/js/data/lexicon.js";
 import { UNIT_BY_ID } from "../app/js/units.js";
 
@@ -164,12 +164,19 @@ test("every outline stays finite and inside its viewBox", () => {
   }
 });
 
-test("unit glyphs share one fixed frame so short and long strokes compare", () => {
-  const [fx, fy, fw, fh] = UNIT_VIEWBOX;
+test("unit glyphs share one fixed frame centred on the glyph", () => {
   for (const id of Object.keys(UNIT_BY_ID)) {
-    const [x, y, w, h] = outlineForUnit(id, "precision").viewBox;
-    assert.ok(x >= fx - 1e-6 && y >= fy - 1e-6, `${id} fits the frame's top left`);
-    assert.ok(x + w <= fx + fw + 1e-6 && y + h <= fy + fh + 1e-6, `${id} fits the frame's bottom right`);
+    const outline = outlineForUnit(id, "precision");
+    const [x, y, w, h] = referenceViewBox(outline, UNIT_FRAME);
+    const [ox, oy, ow, oh] = outline.viewBox;
+    assert.ok(ox >= x - 1e-6 && oy >= y - 1e-6, `${id} fits the frame's top left`);
+    assert.ok(ox + ow <= x + w + 1e-6 && oy + oh <= y + h + 1e-6, `${id} fits the frame's bottom right`);
+    if (w === UNIT_FRAME[0]) {
+      assert.ok(Math.abs(ox + ow / 2 - (x + w / 2)) < 1e-6, `${id} is centred horizontally`);
+    }
+    if (h === UNIT_FRAME[1]) {
+      assert.ok(Math.abs(oy + oh / 2 - (y + h / 2)) < 1e-6, `${id} is centred vertically`);
+    }
   }
 });
 

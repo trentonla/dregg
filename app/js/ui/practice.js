@@ -1,7 +1,7 @@
 // Focused practice route. Read, write, trace, and drill share one session shell.
 import { UNIT_BY_ID } from "../units.js";
 import { LEXICON } from "../data/lexicon.js";
-import { UNIT_VIEWBOX, outlineForWord, outlineSvg, referenceViewBox } from "../outline.js";
+import { outlineForWord, outlineSvg, referenceViewBox } from "../outline.js";
 import { gradeDrill, gradeRead, traceScore, READ_ANSWER_OVERRIDES } from "../grader.js";
 import { isUnitUnlocked, recommendation, trackUnits } from "../engine.js";
 import { mountCanvas } from "../draw/canvas.js";
@@ -86,7 +86,7 @@ function promptHtml(item, outline, sound, blends) {
   }
   if (item.mode === "drill") {
     return `<div class="stage stage--drill">
-      <div class="outline-stage">${unitGlyph(item.drill?.answer, item.track, { className: "glyph glyph--drill", viewBox: UNIT_VIEWBOX })}</div>
+      <div class="outline-stage">${unitGlyph(item.drill?.answer, item.track, { className: "glyph glyph--drill" })}</div>
       <p class="muted">Which stroke is this?</p>
     </div>`;
   }
@@ -165,7 +165,7 @@ function feedbackHtml(item, outline, total, blends) {
     return `<div class="feedback ${correct ? "feedback--correct" : "feedback--wrong"}" role="status" aria-live="polite">
       <p class="feedback-title">${correct ? "Correct." : "Not quite."}</p>
       <div class="drill-result">
-        <div class="outline-stage">${unitGlyph(answerId, item.track, { className: "glyph glyph--drill", viewBox: UNIT_VIEWBOX })}</div>
+        <div class="outline-stage">${unitGlyph(answerId, item.track, { className: "glyph glyph--drill" })}</div>
         <div>
           <p class="feedback-word">${escapeHtml(answerUnit?.label || answerId)}</p>
           <p class="feedback-note">${escapeHtml(answerUnit?.description || "")}</p>
@@ -234,8 +234,15 @@ function summaryHtml(summary, state) {
 }
 
 export function renderPractice(root, store) {
-  const state = store.getState();
-  const session = state.session;
+  let state = store.getState();
+  let session = state.session;
+  if (!session || !session.items.length) {
+    // Opening Practice with nothing in flight starts a session quietly. It is
+    // not shown on Today until the first answer lands.
+    store.ensureSession?.();
+    state = store.getState();
+    session = state.session;
+  }
   if (!session || !session.items.length) {
     root.innerHTML = `<section class="practice"><div class="empty"><h2>No session yet.</h2><p>Start a short session from Today.</p><a class="btn btn--primary" href="#/today">Go to Today</a></div></section>`;
     return;

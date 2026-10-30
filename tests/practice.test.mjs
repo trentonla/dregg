@@ -86,6 +86,32 @@ test("drill feedback names the stroke instead of the word", () => {
   assert.ok(!html.includes('class="phonemes"'));
 });
 
+test("opening practice with no session starts one quietly", () => {
+  const progress = structuredClone(DEFAULT_PROGRESS);
+  ensureProgress(progress, "core");
+  const state = { session: null, settings: { sessionLength: 12, modeMix: "mixed", sound: false }, progress, track: "core" };
+  let ensured = 0;
+  const store = {
+    getState: () => state,
+    ensureSession: () => {
+      ensured += 1;
+      state.session = createSession({
+        progress,
+        track: "core",
+        settings: state.settings,
+        seed: 5,
+      });
+      return state.session;
+    },
+    currentItem: () => state.session.items[state.session.index],
+  };
+  const root = fakeRoot();
+  renderPractice(root, store);
+
+  assert.equal(ensured, 1);
+  assert.match(root.innerHTML, /class="practice/);
+});
+
 test("write mode keeps the model outline hidden until revealed", () => {
   const { state, store } = setup(37);
   const writeIndex = state.session.items.findIndex((item) => item.mode === "write");

@@ -1,7 +1,7 @@
 // Progress: mastery grid, curriculum stages, recent volume, session history, backup.
 import { activePhases } from "../curriculum.js";
 import { isUnitUnlocked } from "../engine.js";
-import { escapeHtml, pageHeader, percent, progressBar, unitGlyph, unitLabel } from "./components.js";
+import { escapeHtml, pageHeader, percent, unitGlyph, unitLabel } from "./components.js";
 import { backupHtml, wireBackup } from "./backup.js";
 
 const view = { sort: "weak" };
@@ -132,14 +132,13 @@ export function renderProgress(root, store) {
           <label><input type="radio" name="sort" value="attempts" ${view.sort === "attempts" ? "checked" : ""}><span>Most seen</span></label>
         </div>
       </div>
-      <p class="muted">One tile per stroke. The bar is mastery from your recent accuracy; the number is how many times you have seen it. Tap a tile to drill that stroke. Locked tiles open as you master the strokes before them.</p>
+      <p class="muted">One tile per stroke. The percentage is your recent accuracy and the count is how many times you have seen it. Tap a tile to drill that stroke. Locked tiles open as you master the strokes before them.</p>
       <div class="mastery-grid">${rows
         .map(
-          (row) => `<button class="mastery-cell${row.unlocked ? "" : " is-locked"}" data-unit="${escapeHtml(row.id)}" aria-label="${escapeHtml(row.label)}: ${percent(row.mastery)} mastery">
+          (row) => `<button class="mastery-cell${row.unlocked ? "" : " is-locked"}" data-unit="${escapeHtml(row.id)}" aria-label="${escapeHtml(row.label)}: ${percent(row.mastery)} accuracy, seen ${row.attempts} times">
             ${unitGlyph(row.id, state.track, { className: "glyph glyph--small" })}
             <span class="mastery-name">${escapeHtml(row.label)}</span>
-            ${progressBar(row.mastery, 1, `${row.label} mastery`)}
-            <span class="mono mastery-attempts">${row.attempts}</span>
+            <span class="mono mastery-stats"><span>${percent(row.mastery)}</span><span class="mastery-attempts">${row.attempts}×</span></span>
           </button>`,
         )
         .join("")}</div>
