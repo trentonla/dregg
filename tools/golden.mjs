@@ -17,7 +17,7 @@ const snapshotDir = path.join(root, "tests", "golden");
 const sheetPath = path.join(root, "docs", "outline-sheet.html");
 
 export const GOLDEN_UNITS = ["t", "d", "n", "m", "a1", "e1", "o1", "u1", "ai", "ng", "w", "blend-ten"];
-export const GOLDEN_WORDS = ["team", "running", "people", "machine", "think", "boy", "use", "we", "yes", "hot", "art", "near", "tears", "job", "box"];
+export const GOLDEN_WORDS = ["team", "running", "people", "machine", "think", "boy", "use", "we", "yes", "hot", "art", "near", "tears", "job", "box", "quick", "queen", "beware", "old"];
 
 function unitSvg(id, track = "precision") {
   const outline = outlineForUnit(id, track);

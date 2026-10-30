@@ -329,8 +329,8 @@ export const GLIDES = [
     ["W"],
     "W",
     hook(0.45, -30, 0.18, "up"),
-    { initial: hook(0.45, -30, 0.18, "up"), final: hook(0.45, -30, 0.18, "up"), medial: dash(0.35, 0) },
-    "Oo-hook initially and finally; a dash under the following vowel medially.",
+    { initial: hook(0.45, -30, 0.18, "up"), final: hook(0.45, -30, 0.18, "up"), medial: dash(0.4, 0) },
+    "Oo-hook initially and finally; a dash beneath the following vowel medially.",
     ["we", "way"],
   ),
   G(

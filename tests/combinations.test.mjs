@@ -72,8 +72,17 @@ test("glide variants follow the documented placement", () => {
 });
 
 test("medial w draws a dash under the following vowel", () => {
-  const outline = renderOutline(["k", "w", "i", "n"], "precision", { word: "quick" });
+  const outline = renderOutline(["k", "w", "e1", "n"], "precision", { word: "queen" });
   const dash = outline.segments.find((segment) => segment.kind === "dash");
   assert.ok(dash, "medial w should draw a dash");
   assert.equal(dash.unitId, "w");
+  // Anniversary p69 §99: the dash sits beneath the vowel, not across it.
+  const vowel = outline.segments.find((segment) => segment.unitId === "e1");
+  const vowelBottom = Math.max(...vowel.points.map((point) => point.y));
+  assert.ok(Math.min(...dash.points.map((point) => point.y)) > vowelBottom);
+  assert.ok(outline.placements.some((placement) => placement.unitId === "w" && placement.rule === "medial"));
+
+  // A vowel that carries a final r still gets its dash.
+  const beware = renderOutline(["b", "e1", "w", "e2", "r"], "precision", { word: "beware" });
+  assert.ok(beware.segments.some((segment) => segment.kind === "dash"), "dash should survive the r loop");
 });

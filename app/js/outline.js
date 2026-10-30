@@ -456,12 +456,11 @@ function placeOrnament(id, pen, prevId, nextId, track, index, total, word, loopD
     const variant = selectGlideVariant(id, index, total, prevId, nextId);
     const glyph = unit.variants?.[variant] || unit.glyph;
     if (glyph.type === "dash") {
-      const dir = { x: 1, y: 0 };
-      const at = add(pen, scale(n, side * 0.1));
-      const end = add(at, scale(dir, glyph.length));
-      segments.push(makeSegment(id, "dash", true, pathLine(at, end), [at, end]));
-      placements.push({ ...placement, rule: "initial", note: "Medial w is a dash under the vowel." });
-      return { segments, placements };
+      // Anniversary p69 §99: the dash goes beneath the vowel that follows. The
+      // vowel is placed on the next pass, so hand the dash back to be drawn under
+      // its final position rather than under the pen.
+      placements.push({ ...placement, rule: "medial", note: "Medial w is a dash beneath the following vowel." });
+      return { segments, placements, dash: glyph.length };
     }
     if (glyph.type === "ellipse") {
       const placed = tangentEllipsePath(pen, scale(n, side), glyph.rx, glyph.ry);
@@ -630,6 +629,17 @@ export function renderOutline(unitIds, track = "core", options = {}) {
   const placements = [];
   let pen = { x: 0, y: 0 };
   let prevId = null;
+  // Length of a medial-w dash waiting for the vowel it belongs under.
+  let pendingDash = 0;
+  const flushDash = (placed) => {
+    if (!pendingDash) return;
+    const points = placed.segments.flatMap((segment) => segment.points);
+    const box = points.length ? bounds(points) : { minX: pen.x, maxX: pen.x, maxY: pen.y };
+    const at = { x: (box.minX + box.maxX) / 2 - pendingDash / 2, y: box.maxY + 0.16 };
+    const end = { x: at.x + pendingDash, y: at.y };
+    segments.push(makeSegment("w", "dash", true, pathLine(at, end), [at, end]));
+    pendingDash = 0;
+  };
 
   for (let i = 0; i < seq.length; i += 1) {
     const id = seq[i];
@@ -659,6 +669,7 @@ export function renderOutline(unitIds, track = "core", options = {}) {
       const placed = placeOrnament(id, pen, prevId, nextId, track, i, seq.length, word, loopDir, finalR);
       segments.push(...placed.segments);
       placements.push(...placed.placements);
+      flushDash(placed);
       if (placed.end) pen = placed.end;
       prevId = sFinal ? "s" : "r";
       i += sFinal ? 2 : 1;
@@ -699,6 +710,8 @@ export function renderOutline(unitIds, track = "core", options = {}) {
     const placed = placeOrnament(id, pen, prevId, nextId, track, i, seq.length, word);
     segments.push(...placed.segments);
     placements.push(...placed.placements);
+    flushDash(placed);
+    if (placed.dash) pendingDash = placed.dash;
     if (placed.end) pen = placed.end;
     prevId = id;
   }
