@@ -375,6 +375,9 @@
 
 @media (max-width: 899px) {
   body.is-session {
+    position: fixed;
+    inset: 0;
+    width: 100%;
     overflow: hidden;
   }
 
@@ -388,11 +391,17 @@
 
   .is-practice .main.is-session {
     position: fixed;
-    inset: 0;
-    height: auto;
+    top: var(--vv-top, 0px);
+    left: 0;
+    right: 0;
+    height: var(--vv-height, 100dvh);
     padding: calc(var(--space-2) + env(safe-area-inset-top)) var(--space-4)
       calc(var(--space-2) + env(safe-area-inset-bottom));
     overflow: hidden;
+  }
+
+  body.is-typing .is-practice .main.is-session {
+    padding-bottom: var(--space-2);
   }
 
   /* One screen, no scrolling: the prompt sits high so the keyboard never

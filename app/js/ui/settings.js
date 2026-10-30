@@ -1,7 +1,8 @@
 // Settings: track, session shape, display, storage, offline, and about.
 import { escapeHtml, pageHeader } from "./components.js";
 import { backupHtml, wireBackup } from "./backup.js";
-import { applyUpdate } from "../offline.js";
+import { applyUpdate, forceReload } from "../offline.js";
+import { BUILD } from "../build.js";
 
 function toggle(name, label, hint, checked, { disabled = false } = {}) {
   return `<label class="setting-row${disabled ? " is-disabled" : ""}">
@@ -76,10 +77,11 @@ export function renderSettings(root, store) {
     ${backupHtml(state, { compact: true })}
 
     <section class="module module--about">
-      <div class="module-head"><h2>About</h2><span class="mono">v1.0</span></div>
+      <div class="module-head"><h2>About</h2><span class="mono">v1.0 · ${escapeHtml(BUILD)}</span></div>
       <p class="muted">Gregg Anniversary shorthand, taught Core-first. Pronunciations from CMUdict; frequency tiers from a public word list. Stroke geometry follows the 1916 chart and the Anniversary manual.</p>
       <p class="muted">Some joins are simplified. The app labels approximations rather than presenting them as authoritative; see the outline notes in the repository.</p>
       <p class="muted">No account, no analytics, no network requests after install.</p>
+      <button class="btn btn--ghost btn--small" data-force-update>Reload latest version</button>
     </section>`;
 
     for (const radio of root.querySelectorAll('input[name="track"]')) {
@@ -102,6 +104,9 @@ export function renderSettings(root, store) {
     });
     root.querySelector("[data-update]")?.addEventListener("click", () => {
       applyUpdate();
+    });
+    root.querySelector("[data-force-update]")?.addEventListener("click", () => {
+      forceReload();
     });
     wireBackup(root, store);
   }

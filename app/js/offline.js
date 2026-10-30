@@ -75,3 +75,18 @@ export async function applyUpdate() {
   registration?.waiting?.postMessage({ type: "SKIP_WAITING" });
   return true;
 }
+
+// Escape hatch for a stale installed app: drop the worker and every cache so
+// the next load has to come from the network.
+export async function forceReload() {
+  try {
+    if ("serviceWorker" in navigator) {
+      for (const registration of await navigator.serviceWorker.getRegistrations()) await registration.unregister();
+    }
+    if (globalThis.caches) {
+      for (const key of await caches.keys()) await caches.delete(key);
+    }
+  } finally {
+    location.reload();
+  }
+}

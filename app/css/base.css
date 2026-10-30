@@ -361,6 +361,10 @@ svg {
   color: var(--muted);
 }
 
+.module--about .btn {
+  justify-self: start;
+}
+
 .empty {
   display: grid;
   gap: var(--space-3);

@@ -28,6 +28,28 @@ const view = {
   draw: null,
 };
 
+// iOS pans the visual viewport when the keyboard opens. Follow it with the
+// practice shell so the layout stays put instead of scrolling away.
+let viewportBound = false;
+function syncViewport() {
+  const vv = globalThis.visualViewport;
+  if (!vv) return;
+  const typing = typeof document !== "undefined" && document.body?.classList.contains("is-typing");
+  const root = document.documentElement;
+  // A stale pan can survive blur; only follow the viewport while typing.
+  root.style.setProperty("--vv-top", `${typing ? vv.offsetTop : 0}px`);
+  root.style.setProperty("--vv-height", `${vv.height}px`);
+}
+
+function bindViewport() {
+  const vv = globalThis.visualViewport;
+  if (!vv || viewportBound) return;
+  viewportBound = true;
+  vv.addEventListener("resize", syncViewport);
+  vv.addEventListener("scroll", syncViewport);
+  syncViewport();
+}
+
 function resetFor(session, item) {
   const key = `${session.id}:${item.id}`;
   if (view.key === key) return;
@@ -284,7 +306,9 @@ export function renderPractice(root, store) {
   }
   root.classList?.toggle("is-session", Boolean(session && !session.finished && session.items.length));
   if (typeof document !== "undefined") {
-    document.body?.classList.toggle("is-session", Boolean(session && !session.finished && session.items.length));
+    const active = Boolean(session && !session.finished && session.items.length);
+    document.body?.classList.toggle("is-session", active);
+    if (active) bindViewport();
   }
   if (!session || !session.items.length) {
     root.innerHTML = `<section class="practice"><div class="empty"><h2>No session yet.</h2><p>Start a short session from Today.</p><a class="btn btn--primary" href="#/today">Go to Today</a></div></section>`;
@@ -396,8 +420,16 @@ export function renderPractice(root, store) {
       view.input = input.value;
     });
     const sessionEl = root.querySelector(".practice--session");
-    input.addEventListener("focus", () => sessionEl?.classList.add("is-typing"));
-    input.addEventListener("blur", () => sessionEl?.classList.remove("is-typing"));
+    input.addEventListener("focus", () => {
+      sessionEl?.classList.add("is-typing");
+      document.body?.classList.add("is-typing");
+      requestAnimationFrame(syncViewport);
+    });
+    input.addEventListener("blur", () => {
+      sessionEl?.classList.remove("is-typing");
+      document.body?.classList.remove("is-typing");
+      requestAnimationFrame(syncViewport);
+    });
   }
 
   for (const button of root.querySelectorAll("[data-option]")) {
