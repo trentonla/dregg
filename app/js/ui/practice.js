@@ -376,7 +376,10 @@ export function renderPractice(root, store) {
 
   const submit = (feedback, result) => {
     view.feedback = feedback;
-    store.submitResult(result);
+    // A retry after the item was already counted is practice only: show the
+    // result locally instead of recording the same item twice.
+    if (session.results.some((entry) => entry.itemId === item.id)) renderPractice(root, store);
+    else store.submitResult(result);
   };
 
   root.querySelector("[data-exit]")?.addEventListener("click", () => store.exitSession());

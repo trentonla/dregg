@@ -10,7 +10,8 @@
   width: 100%;
   max-width: 680px;
   margin: 0 auto;
-  padding: var(--space-5) var(--space-4) calc(88px + env(safe-area-inset-bottom));
+  /* viewport-fit=cover lets the page run under the iOS status bar; reserve it. */
+  padding: calc(var(--space-5) + env(safe-area-inset-top)) var(--space-4) calc(88px + env(safe-area-inset-bottom));
 }
 
 .tabbar {
