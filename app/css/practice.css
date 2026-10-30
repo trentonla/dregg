@@ -21,6 +21,17 @@
   white-space: nowrap;
 }
 
+.practice-utility {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.practice-utility .stroke-reference {
+  flex: 1;
+}
+
 .stage {
   display: grid;
   gap: var(--space-3);
@@ -274,20 +285,10 @@
   margin-top: var(--space-2);
 }
 
-.practice-bottom {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--space-3);
-  margin-top: var(--space-5);
-  padding-top: var(--space-3);
-  border-top: 1px solid var(--line);
-}
-
 .stroke-reference {
-  margin-top: var(--space-5);
-  padding-top: var(--space-3);
-  border-top: 1px solid var(--line);
+  margin-top: 0;
+  padding-top: 0;
+  border-top: 0;
 }
 
 .stroke-reference summary {
@@ -342,7 +343,100 @@
     display: none;
   }
 
-  .is-practice .main {
-    padding-bottom: var(--space-6);
+  .is-practice .main:has(.practice--session) {
+    height: 100dvh;
+    padding: calc(var(--space-2) + env(safe-area-inset-top)) var(--space-4)
+      calc(var(--space-2) + env(safe-area-inset-bottom));
+    overflow: hidden;
+  }
+
+  /* One screen, no scrolling: the prompt sits high so the keyboard never
+     pushes the outline away, and the canvas takes the lower half. */
+  .practice--session {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+    height: 100%;
+  }
+
+  .practice--session .practice-top {
+    flex: none;
+    padding-bottom: var(--space-2);
+  }
+
+  .practice--session .practice-utility {
+    flex: none;
+  }
+
+  .practice--session .stroke-reference-body {
+    max-height: 30dvh;
+    overflow-y: auto;
+  }
+
+  .practice--session .stage {
+    flex: 0 0 auto;
+    min-height: 0;
+    padding: var(--space-2) 0;
+  }
+
+  .practice--session .stage--trace {
+    display: flex;
+    flex: 1 1 auto;
+    flex-direction: column;
+    gap: var(--space-2);
+  }
+
+  .practice--session .outline-stage {
+    min-height: 0;
+  }
+
+  .practice--session .outline-stage .outline {
+    height: min(30dvh, 240px);
+  }
+
+  .practice--session .stage--drill .outline-stage {
+    min-height: 120px;
+  }
+
+  .practice--session .stage--trace .canvas-wrap--trace {
+    flex: 1 1 auto;
+    height: auto;
+    min-height: 34dvh;
+  }
+
+  .practice--session .answer {
+    flex: none;
+    padding-top: var(--space-2);
+  }
+
+  .practice--session .answer--write {
+    display: flex;
+    flex: 1 1 auto;
+    flex-direction: column;
+    gap: var(--space-2);
+    min-height: 0;
+  }
+
+  .practice--session .answer--write .canvas-wrap {
+    flex: 1 1 auto;
+    height: auto;
+    min-height: 36dvh;
+  }
+
+  .practice--session .answer--write .canvas-tools {
+    flex: none;
+  }
+
+  .practice--session .feedback {
+    flex: 1 1 auto;
+    min-height: 0;
+    padding-top: var(--space-2);
+    overflow-y: auto;
+  }
+
+  .practice--session .feedback .btn--wide {
+    position: sticky;
+    bottom: 0;
+    background: var(--paper);
   }
 }

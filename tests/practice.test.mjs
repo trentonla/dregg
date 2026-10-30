@@ -58,7 +58,7 @@ test("the forgot-a-stroke panel lists only unlocked strokes and leaves the quest
   assert.match(html, /Forgot a stroke\?/);
   assert.match(html, /Which stroke is this\?/);
   assert.match(html, /glyph--drill/);
-  assert.ok(html.indexOf("glyph--drill") < html.indexOf("stroke-reference"));
+  assert.ok(html.indexOf("stroke-reference") < html.indexOf("glyph--drill"), "the panel sits above the question");
   assert.ok(!html.includes(UNIT_BY_ID.k.label), "locked K should not be in the panel");
   assert.ok(!html.includes("data-toggle-hide"));
   assert.ok(!html.includes("option-desc"), "options should not carry descriptions");

@@ -65,7 +65,7 @@ function promptHtml(item, outline, sound, blends) {
     </div>`;
   }
   if (item.mode === "write") {
-    return `<div class="stage">
+    return `<div class="stage stage--write">
       <p class="word-display">${escapeHtml(item.word.w)}</p>
       ${phonemes(item.word)}
       ${sound ? `<button class="btn btn--ghost btn--small" data-speak>Hear it</button>` : ""}
@@ -74,7 +74,7 @@ function promptHtml(item, outline, sound, blends) {
     </div>`;
   }
   if (item.mode === "trace") {
-    return `<div class="stage">
+    return `<div class="stage stage--trace">
       <p class="word-display">${escapeHtml(item.word.w)}</p>
       ${phonemes(item.word)}
       <div class="canvas-wrap canvas-wrap--trace">
@@ -102,7 +102,7 @@ function answerHtml(item) {
     </form>`;
   }
   if (item.mode === "write") {
-    return `<div class="answer">
+    return `<div class="answer answer--write">
       <div class="canvas-wrap">
         <div class="canvas-host"></div>
       </div>
@@ -267,18 +267,19 @@ export function renderPractice(root, store) {
   const outline = outlineForWord(item.word, item.track, { blends });
   const answered = Boolean(view.feedback);
 
-  root.innerHTML = `<section class="practice">
+  root.innerHTML = `<section class="practice practice--session">
     <div class="practice-top">
       <button class="btn btn--ghost" data-exit>Exit</button>
       <span class="practice-meta mono">${modeLabel(item.mode)} · ${session.index + 1} / ${session.items.length}</span>
       ${progressBar(session.results.length, session.items.length, "Session progress")}
     </div>
+    ${
+      answered
+        ? ""
+        : `<div class="practice-utility">${strokeReferenceHtml(state)}<button class="btn btn--ghost btn--small" data-giveup>Give up</button></div>`
+    }
     ${promptHtml(item, outline, state.settings.sound, blends)}
     ${answered ? feedbackHtml(item, outline, session.items.length, blends) : answerHtml(item)}
-    ${!answered ? strokeReferenceHtml(state) : ""}
-    <div class="practice-bottom">
-      ${!answered ? `<button class="btn btn--ghost" data-giveup>Give up</button>` : ""}
-    </div>
   </section>`;
 
   const host = root.querySelector(".canvas-host");
