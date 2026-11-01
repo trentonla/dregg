@@ -36,6 +36,26 @@ per word, not per learner.
 | 12 | `mpt` written as three strokes | 9 | Low | No `mpt`/`mt` long blend |
 | 13 | Syllabic-schwa tag over-applies | 1,165 tags | Root cause | Prefix/suffix vowels marked syllabic |
 
+## Status
+
+Fixes landed for #1–#9 and #11; the audit now reports zero violations for each check.
+
+| # | Status | What changed |
+| --- | --- | --- |
+| 1 | Fixed | `applyContractions` accepts `sh n` as well as `sh u1 n`. |
+| 2 | Fixed | `con`/`com` branch chosen from the spelling; 126/126 contract. |
+| 3 | Fixed | `resolveUnits` inserts the `h` dot before a leading `w` in `wh` words. |
+| 4 | Fixed (gated) | The loop is selected only for the `-tive`/`-tives` suffix (20 words); 0 false uses. |
+| 5 | Fixed | `xFormOrdinal` picks the `s` that came from `k + s`; one x sign per word, no spurious x. |
+| 6 | Fixed | `selectVariant` keeps the wave for `r + k`; 40/40 now use the join. |
+| 7 | Fixed | `outline.js` draws the `l` curve with the upward turn and skips the `d`; 88/88. |
+| 8 | Fixed | `blend-tem` only at a final `-m`/`-ms`/`-ns`; 0 boundary false positives. |
+| 9 | Fixed | `blend-emt` only at `-med`/`-mt`; 0 compound false positives. |
+| 10 | Rejected | See finding 10: `spend`/`gentle` correctly use `blend-ent`; the p89 claim was wrong. |
+| 11 | Fixed | `-tain` is rewritten to `blend-ten` before the blend pass. |
+| 12 | Accepted | `mpt` stays three strokes as a labelled v1 approximation. |
+| 13 | Open | Still the root cause; the targeted fixes above do not depend on it. |
+
 ## Findings
 
 ### 1. `-tion` / `-sion` (High)
@@ -95,13 +115,13 @@ white  w ai t    (expected h + w + ai + t)
 
 ### 4. `blend-tive` (High)
 
-`t/d + f/v` is treated as the loop blend everywhere, but the loop means a `-tive`/`def` syllable
-(`Ann p101`). **All 17 uses are wrong:** `ad-v-` (*advance, advantage, adventure, advice*), `-ful`
-(*delightful, dreadful, grateful, thoughtful, ungrateful*), and compounds (*godfather, outfit,
-platform*). No word in the lexicon needs the loop under the current rules.
+`t/d + f/v` was treated as the loop blend everywhere, but the loop means a `-tive`/`def` syllable
+(`Ann p101`). All 17 uses at the time were wrong: `ad-v-` (*advance, advantage, adventure, advice*),
+`-ful` (*delightful, dreadful, grateful, thoughtful, ungrateful*), and compounds (*godfather, outfit,
+platform*). The loop is still correct for the real `-tive` suffix (*active, motive, native, …*).
 
-**Fix:** remove `blend-tive` from `detectBlend`, or gate it on a `-tive` suffix. Keeping the glyph for
-a later brief-form layer is fine; the generator should not select it.
+**Fix:** gate the loop on the `-tive`/`-tives` suffix instead of every `t/d + f/v`. The glyph stays,
+and 20 suffix words use it with no false positives.
 
 ### 5. `x` (Medium)
 
@@ -119,8 +139,9 @@ exercise   e2 s r s ai s  (three x signs; expected one)
 exact      e1 g s a1 k t  (expected the s to stay s)
 ```
 
-**Fix:** store which `s` is the /ks/ sign in the lexicon (an index or a `x-form` position), and stop
-using the spelling as the test. `x` is one sign for the whole /ks/.
+**Fix:** compute which `s` came from `k + s` in the arpabet (`xFormOrdinal`), pass it to the renderer,
+and stop using the spelling as the test. `x` is one sign for the whole /ks/. `ng + k` is the `nk`
+stroke, so its plural `s` is not x.
 
 ### 6. `rk` (Medium)
 
@@ -158,13 +179,12 @@ interim.
 boundary: `hometown, someday, sometime, sometimes`. `temptation` is borderline (`mpt` reduced to
 `mt`). Same boundary fix as `blend-tem`.
 
-### 10. `blend-pent` (Low)
+### 10. `blend-pent` (Low) — rejected
 
 **10 uses, all correct:** `agent(s), carpenter, happened, imagined, legend(s), opened, sergeant,
-urgent`. Two words that need it use `blend-ent` instead: `spend` (`s p e2 + ent`) and `gentle`
-(`j e2 + ent + l`) — `Ann p89` writes both with the `pent` loop.
-
-**Fix:** `detectLongBlend` should see `p/j + n + d/t` after a vowel too. Small condition.
+urgent`. The original report claimed `spend` (`s p e2 + ent`) and `gentle` (`j e2 + ent + l`) should
+use the `pent` loop, citing `Ann p89`. That citation is wrong: the p89 drill does not contain either
+word, and the written vowel in `spend`/`gentle` means the `ent` blend is the right outline. No change.
 
 ### 11. `-tain` (Medium)
 
@@ -180,12 +200,13 @@ obtain     u1 b t a3 n         (expected u1 b + ten)
 **Fix:** a `-tain` contraction in `applyContractions` that replaces the tail `t a3 n` with
 `blend-ten`, applied after the con/com rule.
 
-### 12. `mpt` (Low)
+### 12. `mpt` (Low) — accepted approximation
 
 The manual writes `mpt`/`mt` as one long curve (*empty, prompt, attempt, contempt*). **9 words** write
 `m + p + t` separately. `temptation` already collapses to `mt` and picks up `blend-emt`.
 
-**Fix:** add an `mpt`/`mt` long blend, or accept the full strokes as a v1 approximation and label it.
+**Decision:** keep the full strokes as a v1 approximation and label it in `docs/OUTLINE-NOTES.md`.
+A proper fix needs a new long-curve glyph, a phase entry, and coverage, which is not worth it yet.
 
 ### 13. Syllabic schwa (root cause)
 
@@ -214,7 +235,7 @@ naturally, but it is the largest change; the targeted contraction fixes are chea
 - **`pent` loop**: correct in *agent, carpenter, happened, imagined, legend, opened, sergeant,
   urgent*.
 - **Joins**: `pr/pl/br/bl/fr/fl/kr/kl/gr/gl/lk` are selected and drawn as precomputed variants.
-- **`ld`**: the variant is selected (the geometry is the only gap).
+- **`ld`**: the variant is selected and drawn as one `l` curve with the upward turn.
 - **Read grading**: aliases accept any spelling whose outline matches, so none of the above changes
   what a learner may type.
 

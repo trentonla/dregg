@@ -161,6 +161,19 @@ export function arpabetToUnits(arpabet, word = "") {
   return { core, full, tags };
 }
 
+// Ann p6: x is one s sign with the left motion, not an extra s. Return the
+// 1-based ordinal of the s unit that carries the ks sound, or 0 if none.
+export function xFormOrdinal(arpabet = []) {
+  let s = 0;
+  for (let i = 0; i < arpabet.length; i += 1) {
+    const phone = stripStress(arpabet[i]);
+    if (phone === "S" || phone === "Z") s += 1;
+    // NG + K is the nk stroke, so a following s is the plural, not x.
+    if (phone === "K" && stripStress(arpabet[i - 1] || "") !== "NG" && arpabet[i + 1] && stripStress(arpabet[i + 1]) === "S") return s + 1;
+  }
+  return 0;
+}
+
 function splitAO(phone, word) {
   const cvcO = /^[b-df-hj-np-tv-z]*o[b-df-hj-np-tv-z]*$/.test(word);
   const shortO = SHORT_O.has(word) || SHORT_O_PREFIX.test(word);

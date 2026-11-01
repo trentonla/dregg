@@ -9,7 +9,7 @@ import {
   selectJoinVariant,
   selectVariant,
 } from "../app/js/combinations.js";
-import { renderOutline } from "../app/js/outline.js";
+import { outlineForWord } from "../app/js/outline.js";
 
 const EXCEPTIONS = new Set([
   "complete",
@@ -33,7 +33,7 @@ const outlineOf = new Map();
 function analysis(record) {
   if (!resolved.has(record.w)) {
     resolved.set(record.w, resolveUnits(record.full, record.w));
-    outlineOf.set(record.w, renderOutline(record.full, "precision", { word: record.w }));
+    outlineOf.set(record.w, outlineForWord(record, "precision"));
   }
   return { ...resolved.get(record.w), outline: outlineOf.get(record.w) };
 }
@@ -50,23 +50,19 @@ function row(label, list, example = 5, format = (record) => record.w) {
 // --- wh ------------------------------------------------------------------
 section("wh: the h dot");
 const wh = LEXICON.filter((record) => record.w.startsWith("wh"));
-const whMissing = wh.filter((record) => !record.full.includes("h"));
+const whMissing = wh.filter((record) => !analysis(record).units.includes("h"));
 row("wh words", wh, 3);
 row("missing the h dot", whMissing, 8, (record) => `${record.w} (${record.full.join(" ")})`);
 
 // --- x-form --------------------------------------------------------------
 section("x: one x sign per ks sound");
 const xWords = LEXICON.filter((record) => record.tags?.includes("x-form"));
-const xMulti = xWords.filter((record) => record.full.filter((unit) => unit === "s").length > 1);
-const extraS = xMulti.reduce(
-  (total, record) => total + record.full.filter((unit) => unit === "s").length - 1,
-  0,
-);
+const xSigns = (record) => analysis(record).outline.placements.filter((placement) => placement.variant === "x");
+const xWrong = xWords.filter((record) => xSigns(record).length !== 1);
+const xExtra = LEXICON.filter((record) => !record.tags?.includes("x-form") && xSigns(record).length > 0);
 row("x-form words", xWords, 3);
-row(`words with more than one s (${extraS} extra s drawn as x)`, xMulti, 8, (record) => {
-  const count = record.full.filter((unit) => unit === "s").length;
-  return `${record.w}: ${count} s -> ${record.full.join(" ")}`;
-});
+row("not exactly one x sign", xWrong, 8, (record) => `${record.w} (${record.full.join(" ")})`);
+row("x sign on a word without ks", xExtra, 8, (record) => `${record.w} (${record.full.join(" ")})`);
 
 // --- con / com -----------------------------------------------------------
 section("con/com: k for the prefix");
@@ -95,8 +91,9 @@ for (const [blend, list] of [...blendWords].sort((a, b) => b[1].length - a[1].le
 }
 
 const tive = blendWords.get("blend-tive") || [];
-section("blend-tive: loop should mean a -tive/def syllable");
+section("blend-tive: the loop is the -tive suffix");
 row("uses", tive, 30, (record) => `${record.w} (${record.full.join(" ")})`);
+row("not a -tive word", tive.filter((record) => !/tives?$/.test(record.w)), 10);
 
 const tem = blendWords.get("blend-tem") || [];
 const emt = blendWords.get("blend-emt") || [];
@@ -134,8 +131,14 @@ const ldWords = LEXICON.filter((record) => {
   const { units } = analysis(record);
   return units.some((unit, index) => unit === "l" && units[index + 1] === "d");
 });
+const ldSeparate = ldWords.filter((record) => {
+  const { units, outline } = analysis(record);
+  const pairs = units.filter((unit, index) => unit === "l" && units[index + 1] === "d").length;
+  const turns = outline.placements.filter((placement) => placement.unitId === "l" && placement.rule === "blend").length;
+  return turns < pairs;
+});
 row("l + d pairs", ldWords, 3);
-console.log("    (the ld variant is selected, but outline.js still draws a separate d stroke)");
+row("still drawing a separate d", ldSeparate, 8, (record) => record.w);
 
 // --- tain / mpt ----------------------------------------------------------
 section("tain and mpt: rules the generator does not have yet");
@@ -175,14 +178,8 @@ const hasNot = (result, unit) => !result.units.includes(unit);
 
 check("wh writes the h dot", "when", "Ann p69 §98", (record, result) => has(result, "h"), "w h e2 n");
 check("wh writes the h dot", "white", "Ann p69 §98", (record, result) => has(result, "h"), "w h ai t");
-check("x is one sign", "six", "Ann ch2 §57", (record) => {
-  const s = record.full.map((unit, index) => ({ unit, index })).filter((entry) => entry.unit === "s");
-  return s.filter((entry) => selectVariant("s", record.full[entry.index - 1], record.full[entry.index + 1], record.w) === "x").length === 1;
-}, "s + x (one x sign)");
-check("x is one sign", "exercise", "Ann ch2 §57", (record, result) => {
-  const s = record.full.map((unit, index) => ({ unit, index })).filter((entry) => entry.unit === "s");
-  return s.filter((entry) => selectVariant("s", record.full[entry.index - 1], record.full[entry.index + 1], record.w) === "x").length === 1;
-}, "one x sign, not three");
+check("x is one sign", "six", "Ann ch2 §57", (record, result) => result.outline.placements.filter((placement) => placement.variant === "x").length === 1, "one x sign");
+check("x is one sign", "exercise", "Ann ch2 §57", (record, result) => result.outline.placements.filter((placement) => placement.variant === "x").length === 1, "one x sign, not three");
 check("con- is k", "convention", "Ann §80", (record, result) => result.units[0] === "k" && result.units[1] !== "n", "k + v...");
 check("com- is k", "computer", "Ann §80", (record, result) => result.units[0] === "k" && result.units[1] !== "m", "k + p...");
 check("tive is a syllable", "advantage", "Dictionary p6", (record, result) => hasNot(result, "blend-tive"), "a d v a n t...");
@@ -196,8 +193,9 @@ check("tem is correct", "item", "Ann p101 §154", (record, result) => has(result
 check("tem is correct", "victim", "Ann p101 §154", (record, result) => has(result, "blend-tem"), "v e1 k + tem");
 check("pent is correct", "agent", "Ann p101 §154", (record, result) => has(result, "blend-pent"), "a3 + pent");
 check("pent is correct", "happened", "Ann p89 §135", (record, result) => has(result, "blend-pent"), "h a1 + pent");
-check("pent is correct", "spend", "Ann p89 §135", (record, result) => has(result, "blend-pent"), "s p e2 + pent");
-check("pent is correct", "gentle", "Ann p89 §135", (record, result) => has(result, "blend-pent"), "j e2 + pent + l");
+// The original report wanted pent here; the written vowel means ent is right.
+check("spend keeps ent", "spend", "rejected p89 claim", (record, result) => has(result, "blend-ent"), "s p e2 + ent");
+check("gentle keeps ent", "gentle", "rejected p89 claim", (record, result) => has(result, "blend-ent"), "j e2 + ent + l");
 check("rk is a wave", "ark", "Ann p25 §21", (record, result) => result.outline.segments.some((segment) => segment.unitId === "r" && segment.kind === "stroke"), "a2 + rk wave");
 check("rk is a wave", "dark", "Ann p25 §21", (record, result) => result.outline.segments.some((segment) => segment.unitId === "r" && segment.kind === "stroke"), "d a2 + rk wave");
 check("tain is ten", "contain", "Ann §155", (record, result) => has(result, "blend-ten"), "k + ten");

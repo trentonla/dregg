@@ -14,6 +14,7 @@ import {
   selectJoinVariant,
   selectVariant,
 } from "./combinations.js";
+import { xFormOrdinal } from "./phonemes.js";
 import {
   add,
   bounds,
@@ -217,7 +218,7 @@ function placeConsonant(id, pen, variant, track, join = null) {
   const n = normal(dir);
   const length = glyph.length || 1;
   const bulge = glyph.bulge || 0;
-  const end = add(pen, scale(dir, length));
+  let end = add(pen, scale(dir, length));
   let d;
   let points;
   let kind = "stroke";
@@ -242,6 +243,17 @@ function placeConsonant(id, pen, variant, track, join = null) {
       const c2 = add(add(pen, scale(dir, length * 0.7)), scale(n, -0.2 * sign));
       d = pathCubic(pen, c1, c2, end);
       points = sampleCubic(pen, c1, c2, end);
+    } else if (glyph.ld) {
+      // Ann p90 §136: l + d is the l cup with a swinging upward turn at the finish.
+      const bend = bulge * length * 1.35;
+      const { c1, c2 } = curveControls(pen, dir, n, length, bend, glyph.apex);
+      const up = { x: 0, y: -1 };
+      const t1 = add(add(end, scale(dir, 0.22)), scale(up, 0.08));
+      const t2 = add(add(end, scale(dir, 0.34)), scale(up, 0.42));
+      const tip = add(add(end, scale(dir, 0.18)), scale(up, 0.56));
+      d = `${pathCubic(pen, c1, c2, end)} ${pathCubic(end, t1, t2, tip)}`;
+      points = [...sampleCubic(pen, c1, c2, end), ...sampleCubic(end, t1, t2, tip)];
+      end = tip;
     } else {
       const bend = bulge * length * 1.35;
       const { c1, c2 } = curveControls(pen, dir, n, length, bend, glyph.apex);
@@ -255,10 +267,15 @@ function placeConsonant(id, pen, variant, track, join = null) {
 
   const placement = {
     unitId: id,
-    rule: bulge !== 0 ? "inside-curve" : "on-straight",
+    variant: variant || null,
+    rule: glyph.ld ? "blend" : bulge !== 0 ? "inside-curve" : "on-straight",
     side: sideLabel(n),
     anchorUnitId: null,
-    note: bulge !== 0 ? "Stroke keeps its absolute orientation." : "Straight stroke.",
+    note: glyph.ld
+      ? "l + d is one l curve with an upward turn at the finish."
+      : bulge !== 0
+        ? "Stroke keeps its absolute orientation."
+        : "Straight stroke.",
   };
   return { segment: makeSegment(id, kind, false, d, points), placement, end, dir, bulge };
 }
@@ -624,6 +641,20 @@ export function renderOutline(unitIds, track = "core", options = {}) {
     blends: options.blends === undefined ? true : options.blends,
   });
   const seq = resolved.units;
+  // Ann p6: the ks sound is one s sign (the x form), chosen by its ordinal
+  // among the s units. The arpabet knows which s came from k + s.
+  let xAt = -1;
+  if (options.x) {
+    let seen = 0;
+    for (let i = 0; i < seq.length; i += 1) {
+      if (seq[i] !== "s") continue;
+      seen += 1;
+      if (seen === options.x) {
+        xAt = i;
+        break;
+      }
+    }
+  }
   const contractionResult = { contractions: resolved.contractions };
   const segments = [];
   const placements = [];
@@ -662,7 +693,7 @@ export function renderOutline(unitIds, track = "core", options = {}) {
       // Scans p29/p55: r after a circle vowel is the same left-motion circle, so
       // the vowel is written as one loop that carries the r (and a final s).
       const afterR = seq[i + 2];
-      const sFinal = afterR === "s" && i + 3 === seq.length;
+      const sFinal = afterR === "s" && i + 3 === seq.length && i + 2 !== xAt;
       const finalR = afterR == null;
       const beforeId = precedingConsonant(seq, i, track);
       const loopDir = (sFinal ? null : nextStrokeDir(afterR, track)) || prevStrokeDir(beforeId, track) || { x: 1, y: 0 };
@@ -677,14 +708,14 @@ export function renderOutline(unitIds, track = "core", options = {}) {
     }
 
     if (unit.kind === "consonant") {
-      const variant = selectVariant(id, prevId, nextId, word) || selectJoinVariant(id, nextId);
+      const variant = (i === xAt ? "x" : selectVariant(id, prevId, nextId, word)) || selectJoinVariant(id, nextId);
       const before = variant === "circle" ? precedingConsonant(seq, i, track) : null;
       const circleSide = before === "p" || before === "b" ? { x: 0, y: -1 } : { x: 0, y: 1 };
       const nextDir = variant === "circle" ? nextStrokeDir(nextId, track) : null;
       const beforeDir = variant === "circle" ? prevStrokeDir(before, track) : null;
       // Scan p56: s added to a final left-motion circle on a straight stroke
       // turns the circle into a loop, so r + s is one loop, not two circles.
-      if (variant === "circle" && nextId === "s" && i + 2 === seq.length) {
+      if (variant === "circle" && nextId === "s" && i + 2 === seq.length && i + 1 !== xAt) {
         const glyph = glyphOf(id, track, variant);
         const r = circleRadius(glyph);
         const dir = beforeDir || { x: 1, y: 0 };
@@ -704,6 +735,8 @@ export function renderOutline(unitIds, track = "core", options = {}) {
       placements.push(placed.placement);
       pen = placed.end;
       prevId = id;
+      // l + d is one stroke: the upward turn on the l is the d (Ann p90 §136).
+      if (variant === "ld") i += 1;
       continue;
     }
 
@@ -745,7 +778,7 @@ export function renderOutline(unitIds, track = "core", options = {}) {
 
 export function outlineForWord(word, track = "core", options = {}) {
   const units = track === "core" ? word.core : word.full;
-  return renderOutline(units, track, { word: word.w, ...options });
+  return renderOutline(units, track, { word: word.w, x: xFormOrdinal(word.arpabet), ...options });
 }
 
 export function outlineForUnit(unitId, track = "core") {

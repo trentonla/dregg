@@ -1,7 +1,16 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { applyContractions, selectVariant, selectJoinVariant, selectGlideVariant, detectBlend } from "../app/js/combinations.js";
-import { renderOutline } from "../app/js/outline.js";
+import {
+  applyContractions,
+  detectBlend,
+  resolveUnits,
+  selectGlideVariant,
+  selectJoinVariant,
+  selectVariant,
+} from "../app/js/combinations.js";
+import { LEXICON_BY_WORD } from "../app/js/data/lexicon.js";
+import { outlineForWord, renderOutline } from "../app/js/outline.js";
+import { xFormOrdinal } from "../app/js/phonemes.js";
 
 test("-tion and -ing contract before layout", () => {
   const tion = applyContractions(["sh", "u1", "n"], "nation");
@@ -85,4 +94,44 @@ test("medial w draws a dash under the following vowel", () => {
   // A vowel that carries a final r still gets its dash.
   const beware = renderOutline(["b", "e1", "w", "e2", "r"], "precision", { word: "beware" });
   assert.ok(beware.segments.some((segment) => segment.kind === "dash"), "dash should survive the r loop");
+});
+
+test("Anniversary fixes: wh, -tive, -tain, rk, ld", () => {
+  // Ann p69 §98: wh is h + w even though CMUdict drops the h.
+  assert.deepEqual(resolveUnits(["w", "e1", "n"], "when").units, ["h", "w", "e1", "n"]);
+  // Ann p101: the t-v loop is only the -tive suffix.
+  assert.deepEqual(resolveUnits(["a1", "k", "t", "e1", "v"], "active").units, ["a1", "k", "blend-tive"]);
+  assert.deepEqual(resolveUnits(["u1", "d", "v", "a1", "n", "s"], "advance").units, ["u1", "d", "v", "a1", "n", "s"]);
+  // Ann §155: -tain is ten with no vowel between t and n.
+  assert.deepEqual(resolveUnits(["k", "n", "t", "a3", "n"], "contain").units, ["k", "blend-ten"]);
+  assert.deepEqual(resolveUnits(["m", "a3", "n", "t", "a3", "n"], "maintain").units, ["m", "a3", "n", "blend-ten"]);
+  // r before k keeps the wave, not the r circle.
+  assert.equal(selectVariant("r", "a2", "k", "dark"), null);
+  assert.equal(selectVariant("r", "a2", null, "car"), "circle");
+  // l + d is one l stroke with an upward turn, so no separate d is drawn.
+  const old = outlineForWord(LEXICON_BY_WORD.old, "precision");
+  assert.equal(old.placements.find((placement) => placement.unitId === "l").rule, "blend");
+  assert.ok(!old.segments.some((segment) => segment.unitId === "d" && segment.kind === "stroke"));
+});
+
+test("tem and emt only blend at the word ending", () => {
+  assert.equal(detectBlend("t", "m", "item"), "blend-tem");
+  assert.equal(detectBlend("t", "m", "admit"), null);
+  assert.equal(detectBlend("t", "m", "apartment"), null);
+  assert.equal(detectBlend("m", "t", "dreamt"), "blend-emt");
+  assert.equal(detectBlend("m", "t", "hometown"), null);
+});
+
+test("x is one s sign per ks sound", () => {
+  assert.equal(xFormOrdinal(["S", "IH1", "K", "S"]), 2);
+  assert.equal(xFormOrdinal(["EH1", "K", "S", "ER0", "S", "AY2", "Z"]), 1);
+  assert.equal(xFormOrdinal(["IH0", "G", "Z", "AE1", "K", "T"]), 0);
+  // nk already carries the k, so its plural s is not x.
+  assert.equal(xFormOrdinal(["B", "AE1", "NG", "K", "S"]), 0);
+  const signs = (word) =>
+    outlineForWord(LEXICON_BY_WORD[word], "precision").placements.filter((placement) => placement.variant === "x").length;
+  assert.equal(signs("six"), 1);
+  assert.equal(signs("exercise"), 1);
+  assert.equal(signs("exact"), 0);
+  assert.equal(signs("banks"), 0);
 });

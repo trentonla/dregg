@@ -35,6 +35,10 @@ against a manual/dictionary), `fixed` (rule or override added).
 | 24 | Diphthongs as one stroke | fixed | `ai`/`ow`/`oi`/`yu` were a circle plus a separate hook/loop. They are now a single continuous path (`diphthong` glyph): the circle closes and runs straight into its tail. | 1916 chart; STROKE-REFERENCE §4 |
 | 25 | Blend orientation | fixed | `-nt/-nd` and `-mt/-md` cup upward from the bottom of the preceding circle; they no longer arch over its top. `tive`/`pent` are single oval loops. | Anniversary p89 §133–135; 1916 chart; STROKE-REFERENCE §5 |
 | 26 | `pr`/`pl`/`br`/`bl` joins | fixed | The first stroke bows further left so the pair reads as a `C` with a bottom tail, matching “start to the left” / “start down”. | Anniversary p35 §37–38; COMBINATIONS §3 |
+| 27 | `mpt` / `mt` long curve | approximated | *empty, prompt, attempt, contempt* are written as one long curve in the manual; v1 draws `m + p + t` as separate strokes. A proper fix needs a new long-curve glyph and phase entry. | Anniversary Manual; `docs/ACCURACY-AUDIT.md` #12 |
+
+The 2026 accuracy audit (`docs/ACCURACY-AUDIT.md`) also landed rules for `wh`, `-tive`, `-tain`, `rk`,
+`ld`, `tem`/`emt`, and the `x` ordinal; their verification notes live there.
 
 ## Adding an entry
 
