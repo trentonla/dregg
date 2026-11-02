@@ -28,6 +28,12 @@ test("A/O split keeps art and on distinct", () => {
 test("schwa and syllabic consonants follow the policy", () => {
   assert.deepEqual(makeRecord("up", ["AH1", "P"]).full, ["u1", "p"]);
   assert.deepEqual(makeRecord("people", ["P", "IY1", "P", "AH0", "L"]).full, ["p", "e3", "p", "l"]);
+  // Post-stress schwa before l/m/n reduces; a prefix or word-initial schwa is written.
+  assert.deepEqual(makeRecord("button", ["B", "AH1", "T", "AH0", "N"]).full, ["b", "u1", "t", "n"]);
+  assert.deepEqual(makeRecord("amusing", ["AH0", "M", "Y", "UW1", "Z", "IH0", "NG"]).full, ["u1", "m", "y", "u3", "s", "e1", "ng"]);
+  assert.deepEqual(makeRecord("convention", ["K", "AH0", "N", "V", "EH1", "N", "SH", "AH0", "N"]).full, ["k", "u1", "n", "v", "e2", "n", "sh", "n"]);
+  // The single-vowel brief keeps the running form.
+  assert.deepEqual(makeRecord("and", ["AH0", "N", "D"]).full, ["n", "d"]);
 });
 
 test("syllable count and heuristic records", () => {

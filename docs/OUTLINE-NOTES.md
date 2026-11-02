@@ -20,7 +20,7 @@ against a manual/dictionary), `fixed` (rule or override added).
 | 9 | `ten`/`ent` blends | approximated | Approximated with a fillet; the printed form is a deliberate large curve. Prefer an explicit composite path. | 1916 chart blends |
 | 10 | `def-v` / `jent-d` loops | approximated | `tive` and `pent` already use the single-oval loop; `def-v` and `jent-d` fall back to separate strokes because the loop only triggers on adjacent consonants. Adding them means a new blend unit that carries an intervening vowel. | 1916 chart, blended consonants |
 | 11 | `s` mirror variants | fixed | Explicit distribution: left before/after `p`, `b`, `r`, `l` and after `t`, `d`, `n`, `m`, `o`; right otherwise. Geometry still to tune. | Anniversary Manual ch2 §49; COMBINATIONS §4 |
-| 12 | Schwa omission | approximated | v1 writes `AH0` as `u1`; natural Gregg often omits unstressed vowels. | Manual examples |
+| 12 | Schwa omission | approximated | v1 writes a word-initial `AH0` as `u1`; natural Gregg often omits unstressed vowels. A post-stress `AH0` before `l`/`m`/`n` is dropped (see #28). | Manual examples; `docs/ACCURACY-AUDIT.md` #13 |
 | 13 | `h` dot placement | approximated | The dot is drawn at the pen, which is where the following vowel attaches, so it reads as "at the vowel" (*he*, *have*); after a vowel it sits below it (*ah*). No manual page in the reference set shows the dot in a longer outline. | Manual examples (*he*, *have*, *ah*) |
 | 14 | `r` after a vowel | fixed | Standard form is the post-vocalic `r` circle, not the `r` stroke; obscure `ur` is the circle alone. Circle vowel + `r` merges into one loop (scan p29/p55); `s` after a final left-motion `r` loop folds in; a **final** `r` circle is drawn closed at the stroke end, not as an open loop. | Anniversary Manual ch3 §71–72, ch7 §161–163; COMBINATIONS §5; scans p29, p55, p56 |
 | 15 | Join variants | verified | Precomputed variants, no runtime rotation: `pr`/`pl` bow left, `br`/`bl` start down, `fr`/`fl` rounded, `kr`/`gl` equal flatter curves, `gr`/`kl` unequal, `ld` a swinging upward turn. Rendered drill words match the printed forms closely enough to keep. | Anniversary p24 §19, p25 §20–21, p36 §39, p90 §136 |
@@ -36,9 +36,10 @@ against a manual/dictionary), `fixed` (rule or override added).
 | 25 | Blend orientation | fixed | `-nt/-nd` and `-mt/-md` cup upward from the bottom of the preceding circle; they no longer arch over its top. `tive`/`pent` are single oval loops. | Anniversary p89 §133–135; 1916 chart; STROKE-REFERENCE §5 |
 | 26 | `pr`/`pl`/`br`/`bl` joins | fixed | The first stroke bows further left so the pair reads as a `C` with a bottom tail, matching “start to the left” / “start down”. | Anniversary p35 §37–38; COMBINATIONS §3 |
 | 27 | `mpt` / `mt` long curve | approximated | *empty, prompt, attempt, contempt* are written as one long curve in the manual; v1 draws `m + p + t` as separate strokes. A proper fix needs a new long-curve glyph and phase entry. | Anniversary Manual; `docs/ACCURACY-AUDIT.md` #12 |
+| 28 | Syllabic-schwa scope | fixed | The `syllabic` tag fires only when a stressed vowel precedes `AH0` + `l`/`m`/`n`, or in a single-vowel word. Post-stress schwas reduce (*button*, *written*, *agent*, *carpenter*, *nation*); word-initial schwas stay written (*amusing*, *undo*, *convention*, *computer*), which lets the `con`/`com` and `-tion` contractions fire. The single-vowel guard keeps the `and` brief. | Anniversary Manual ch5 §124; `docs/ACCURACY-AUDIT.md` #13 |
 
 The 2026 accuracy audit (`docs/ACCURACY-AUDIT.md`) also landed rules for `wh`, `-tive`, `-tain`, `rk`,
-`ld`, `tem`/`emt`, and the `x` ordinal; their verification notes live there.
+`ld`, `tem`/`emt`, the `x` ordinal, and the syllabic-schwa scope; their verification notes live there.
 
 ## Adding an entry
 

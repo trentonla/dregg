@@ -34,7 +34,7 @@ per word, not per learner.
 | 10 | `spend`, `gentle` use `ent` instead of `pent` | 2 | Low | `detectLongBlend` only sees `p/j + n + t/d` |
 | 11 | `-tain` not written with `ten` | 11 of 16 | Medium | No `-tain` rule |
 | 12 | `mpt` written as three strokes | 9 | Low | No `mpt`/`mt` long blend |
-| 13 | Syllabic-schwa tag over-applies | 1,165 tags | Root cause | Prefix/suffix vowels marked syllabic |
+| 13 | Syllabic-schwa tag over-applies | 1,165 → 1,099 tags | Root cause | Prefix/suffix vowels marked syllabic |
 
 ## Status
 
@@ -54,7 +54,7 @@ Fixes landed for #1–#9 and #11; the audit now reports zero violations for each
 | 10 | Rejected | See finding 10: `spend`/`gentle` correctly use `blend-ent`; the p89 claim was wrong. |
 | 11 | Fixed | `-tain` is rewritten to `blend-ten` before the blend pass. |
 | 12 | Accepted | `mpt` stays three strokes as a labelled v1 approximation. |
-| 13 | Open | Still the root cause; the targeted fixes above do not depend on it. |
+| 13 | Fixed | The `syllabic` tag now needs an earlier stressed vowel, or a single-vowel word. Word-initial schwas stay written, so `con`/`com` and `-tion` contract; the `and` brief is preserved. |
 
 ## Findings
 
@@ -208,16 +208,19 @@ The manual writes `mpt`/`mt` as one long curve (*empty, prompt, attempt, contemp
 **Decision:** keep the full strokes as a v1 approximation and label it in `docs/OUTLINE-NOTES.md`.
 A proper fix needs a new long-curve glyph, a phase entry, and coverage, which is not worth it yet.
 
-### 13. Syllabic schwa (root cause)
+### 13. Syllabic schwa (root cause) — fixed
 
-**1,165** records carry the `syllabic` tag. The rule is meant for a syllabic consonant (`button`,
-`written`, `sudden`) but it also fires on prefix and suffix vowels: `convention` → `k n …`,
-`computer` → `k m …`, `balance` → `b a1 l n s`. That is why the con/com contraction sees `k n`/`k m`
-instead of `k u1 n`/`k u1 m`, and why `-tion` sees `sh n` instead of `sh u1 n`.
+**1,165** records carried the `syllabic` tag. The rule is meant for a syllabic consonant (`button`,
+`written`, `sudden`) but it also fired on prefix and suffix vowels: `convention` → `k n …`,
+`computer` → `k m …`, `balance` → `b a1 l n s`. That is why the con/com contraction saw `k n`/`k m`
+instead of `k u1 n`/`k u1 m`, and why `-tion` saw `sh n` instead of `sh u1 n`.
 
-**Fix:** restrict the tag to a consonant that follows an unstressed vowel and is followed by no vowel
-(or by `n`/`l` in the same syllable). Fixing this first would make #1, #2 and part of #8 fall out
-naturally, but it is the largest change; the targeted contraction fixes are cheaper.
+**Fix (implemented):** the tag now requires a stressed vowel earlier in the word, or a single-vowel
+word. A word-initial schwa therefore stays written (`amusing` → `u1 m y u3 s e1 ng`, `undo` →
+`u1 n d u3`, `convention` → `k u1 n v e2 n sh n`), which lets the con/com and `-tion` contractions
+fire. Post-stress reductions are unchanged (`button`, `written`, `sudden`, `agent`, `carpenter`,
+`nation`). The single-vowel guard keeps the `and` brief (`n d` → `blend-ent`). 84 outlines changed;
+66 `syllabic` tags dropped; the lexicon selection did not shift. See `docs/OUTLINE-NOTES.md` #28.
 
 ## What is already correct
 
@@ -258,7 +261,8 @@ Cheapest and highest-impact first; each step changes golden snapshots.
 
 Steps 1–3 and 5–6 are self-contained and can land together. Step 4 needs `tools/build-lexicon.mjs`
 to store the /ks/ position. Step 8 needs a boundary signal; until then a spelling guard is honest
-enough.
+enough. All ten steps have now landed; the audit reports zero violations for #1–#9, #11 and #13, and
+the two remaining items (#10, #12) are recorded decisions.
 
 After any step: `npm test`, `npm run coverage`, `npm run audit`, `node tools/golden.mjs --update`,
 review `docs/outline-sheet.html`, then `golden:check`, `precache`, `precache:check`.

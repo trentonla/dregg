@@ -254,7 +254,8 @@ Special sequences:
 - `NG K` → `nk` (e.g., *bank*, *think*).
 - `K S` at the end of or within a word → `s` in its `x` variant (*box, tax*); otherwise `k` + `s`.
 - `K W` → `k` + `w` (*quick*); the `w` renders as an under-dash.
-- A syllabic consonant (`AH0 L`, `AH0 M`, `AH0 N`) drops the schwa: `l`, `m`, `n`.
+- A post-stress syllabic consonant (`AH0 L`, `AH0 M`, `AH0 N`) drops the schwa: `l`, `m`, `n`. A
+  word-initial schwa stays written (*amusing*, *undo*); the single-vowel brief *and* keeps `n d`.
 
 ### 6.2 Vowels (ARPAbet)
 

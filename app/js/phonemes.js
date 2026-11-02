@@ -85,17 +85,22 @@ export function arpabetToUnits(arpabet, word = "") {
   const full = [];
   const tags = [];
   const lower = word.toLowerCase();
+  const vowelCount = phones.filter(isVowelPhone).length;
 
   for (let i = 0; i < phones.length; i += 1) {
     const phone = phones[i];
     const next = phones[i + 1];
     const prev = phones[i - 1];
 
-    // Syllabic consonant: AH0 + L/M/N at the end of a syllable loses the schwa.
+    // Syllabic consonant: a post-stress AH0 + L/M/N loses the schwa (button,
+    // written, camel). A prefix or word-initial schwa is a written vowel
+    // (amusing, undo, convention, computer); the single-vowel brief "and"
+    // keeps the running n-d form.
     if (
       arpabet[i] === "AH0" &&
       (next === "L" || next === "M" || next === "N") &&
-      (i + 2 >= phones.length || !isVowelPhone(phones[i + 2]))
+      (i + 2 >= phones.length || !isVowelPhone(phones[i + 2])) &&
+      (vowelCount === 1 || hasStressBefore(arpabet, i))
     ) {
       tags.push("syllabic");
       continue;
@@ -189,6 +194,15 @@ function splitAO(phone, word) {
 
 function isVowelPhone(phone) {
   return Boolean(VOWEL_MAP[phone]) || phone === "AA" || phone === "AO" || phone === "ER";
+}
+
+// ARPAbet keeps the stress digit on the vowel; any earlier 1 or 2 means the
+// word's accent has already fallen, so a following schwa can reduce.
+function hasStressBefore(arpabet, index) {
+  for (let i = 0; i < index; i += 1) {
+    if (/[12]$/.test(arpabet[i])) return true;
+  }
+  return false;
 }
 
 export function syllableCount(arpabet) {
