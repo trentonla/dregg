@@ -390,7 +390,7 @@ function diphthongPath(pen, shapeId) {
       );
     }
     const tip = b.end;
-    const r = 0.07;
+    const r = 0.11;
     const lcx = tip.x + r * 0.7;
     const lcy = tip.y - r * 0.7;
     const start = Math.atan2(tip.y - lcy, tip.x - lcx);
@@ -753,7 +753,7 @@ export function renderOutline(unitIds, track = "core", options = {}) {
     if (contraction.rule === "-ing") segments.push(dotAt("ng", pen, contraction.note));
     if (contraction.rule === "-ly") {
       const r = 0.14;
-      const placed = tangentEllipsePath(pen, { x: 0, y: -1 }, r, r);
+      const placed = tangentEllipsePath(pen, { x: 1, y: 0 }, r, r);
       segments.push(makeSegment("l", "circle", true, placed.d, placed.points));
     }
   }

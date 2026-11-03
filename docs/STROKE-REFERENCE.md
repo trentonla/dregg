@@ -65,11 +65,11 @@ Suggested starting primitive values (tune against the golden sheet):
 | `b` | 90° | 2.0 u | +0.20 u (bulge left) |
 | `f` | 90° | 1.0 u | −0.20 u (bulge right) |
 | `v` | 90° | 2.0 u | −0.20 u (bulge right) |
-| `ch` | 135° | 1.0 u | 0 |
-| `j` | 135° | 2.0 u | 0 |
+| `ch` | 120° | 1.0 u | 0 |
+| `j` | 120° | 2.0 u | 0 |
 | `sh` | 115° (≈65° from horizontal) | 0.6 u | 0 |
-| `th` (short) | −30° | 1.0 u | −0.10 u |
-| `th` (long, /ð/) | −30° | 2.0 u | −0.10 u |
+| `th` (left motion) | −30° | 1.0 u | +0.16 u |
+| `th` (right motion) | −30° | 1.0 u | −0.16 u |
 | `ng` | 20° | 1.0 u | 0 |
 | `nk` | 20° | 2.0 u | 0 |
 | `s` | 90° | 0.5 u | two mirror arcs |
@@ -104,8 +104,8 @@ visual target, not a formula. The golden sheet is the arbiter.
 | `b` | /b/ | long | curve bowing left `(` | *be*, *by* | ✅ |
 | `f` | /f/ | short | curve bowing right `)` | *for*, *if* | ✅ |
 | `v` | /v/ | long | curve bowing right `)` | *have*, *very* | ✅ |
-| `ch` | /tʃ/ | short | straight, down-left ≈45° | *which*, *each* | ✅ |
-| `j` | /dʒ/ | long | straight, down-left ≈45° | *just*, *age* | ✅ |
+| `ch` | /tʃ/ | short | straight, steep down-left ≈60° | *which*, *each* | ✅ |
+| `j` | /dʒ/ | long | straight, steep down-left ≈60° | *just*, *age* | ✅ |
 | `s` | /s/, /z/ | short | small curve; two mirror join variants | *is*, *so* | ✅ |
 | `sh` | /ʃ/, /ʒ/ | very short (≈0.6 u) | straight, steep down-left ≈65–70°; very small | *shall*, *she* | ◐ |
 | `h` | /h/ | — | dot at the vowel | *he*, *have* | ✅ |

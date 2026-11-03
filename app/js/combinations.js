@@ -36,7 +36,15 @@ export function selectVariant(unitId, prev, next, word = "") {
     if (LEFT_TH.has(prev) || LEFT_TH.has(next)) return "left";
     return "right";
   }
-  if (unitId === "r" && isVowelLike(prev) && next !== "k") return "circle";
+  if (unitId === "r") {
+    // Ann §71–72: the circle is r after a vowel, and the obscure ur before a
+    // consonant or at the end. r + k stays the rk wave (§21), and a lone r
+    // (the chart glyph) stays the stroke.
+    if (next === "k") return null;
+    if (isVowelLike(prev)) return "circle";
+    if (next != null && !isVowelLike(next)) return "circle";
+    if (prev != null && next == null && !isVowelLike(prev)) return "circle";
+  }
   if (unitId === "l" && next === "d") return "ld";
   return null;
 }

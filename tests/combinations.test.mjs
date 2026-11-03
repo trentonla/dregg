@@ -108,6 +108,17 @@ test("Anniversary fixes: wh, -tive, -tain, rk, ld", () => {
   // r before k keeps the wave, not the r circle.
   assert.equal(selectVariant("r", "a2", "k", "dark"), null);
   assert.equal(selectVariant("r", "a2", null, "car"), "circle");
+  // Ann §71–72: obscure ur is the circle alone, including r before a consonant
+  // (her, church, hurt, earn, turn, learn, first) but never before k (work).
+  assert.equal(selectVariant("r", "h", null, "her"), "circle");
+  assert.equal(selectVariant("r", "ch", "ch", "church"), "circle");
+  assert.equal(selectVariant("r", "h", "t", "hurt"), "circle");
+  assert.equal(selectVariant("r", null, "n", "earn"), "circle");
+  assert.equal(selectVariant("r", "t", "n", "turn"), "circle");
+  assert.equal(selectVariant("r", "l", "n", "learn"), "circle");
+  assert.equal(selectVariant("r", "f", "s", "first"), "circle");
+  assert.equal(selectVariant("r", "w", "k", "work"), null);
+  assert.equal(selectVariant("r", null, null, "r"), null);
   // l + d is one l stroke with an upward turn, so no separate d is drawn.
   const old = outlineForWord(LEXICON_BY_WORD.old, "precision");
   assert.equal(old.placements.find((placement) => placement.unitId === "l").rule, "blend");

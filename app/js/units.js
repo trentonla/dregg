@@ -109,12 +109,12 @@ export const CONSONANTS = [
     length: "long",
     phase: 1,
   }),
-  C("ch", ["CH"], "CH", line(1, 135), "Short straight stroke, down and to the left.", ["which", "each"], {
+  C("ch", ["CH"], "CH", line(1, 120), "Short straight stroke, steeply down and to the left.", ["which", "each"], {
     direction: "downward",
     length: "short",
     phase: 5,
   }),
-  C("j", ["JH"], "J", line(2, 135), "Long straight stroke, down and to the left.", ["just", "age"], {
+  C("j", ["JH"], "J", line(2, 120), "Long straight stroke, steeply down and to the left.", ["just", "age"], {
     direction: "downward",
     length: "long",
     phase: 5,
@@ -146,7 +146,7 @@ export const CONSONANTS = [
     "th",
     ["TH", "DH"],
     "TH",
-    curve(1, -30, 0.1),
+    curve(1, -30, 0.16),
     "Shallow rising curve; left- and right-motion forms.",
     ["think", "the"],
     {
@@ -154,8 +154,8 @@ export const CONSONANTS = [
       length: "short",
       phase: 5,
       variants: {
-        left: curve(1, -30, -0.1),
-        right: curve(1, -30, 0.1),
+        left: curve(1, -30, -0.16),
+        right: curve(1, -30, 0.16),
       },
     },
   ),
