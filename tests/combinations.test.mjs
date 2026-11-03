@@ -80,6 +80,18 @@ test("glide variants follow the documented placement", () => {
   assert.equal(selectGlideVariant("w", 2, 6, "o", "e3"), "medial");
 });
 
+test("w is the oo-hook and its vowel nests below", () => {
+  // Ann p68 §97: w is expressed by the oo-hook, so "way" is hook + a circle.
+  const way = renderOutline(["w", "a3"], "precision", { word: "way" });
+  const hook = way.segments.find((segment) => segment.unitId === "w");
+  assert.equal(hook.kind, "hook");
+  assert.match(hook.d, /^M0 0 A/, "the oo-hook is a half ellipse, not a shallow cubic");
+  const hookEnd = hook.points.at(-1);
+  const circle = way.segments.find((segment) => segment.unitId === "a3");
+  const circleY = circle.points.reduce((sum, point) => sum + point.y, 0) / circle.points.length;
+  assert.ok(circleY > hookEnd.y, "the vowel circle hangs under the hook");
+});
+
 test("medial w draws a dash under the following vowel", () => {
   const outline = renderOutline(["k", "w", "e1", "n"], "precision", { word: "queen" });
   const dash = outline.segments.find((segment) => segment.kind === "dash");

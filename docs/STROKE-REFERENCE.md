@@ -163,6 +163,8 @@ the opening.
 - Attached to a downward stroke: place on the appropriate side, opening the same way (up for O, down for
   U).
 - In a diphthong the hook grows straight out of the circle's rim, not as a separate blob.
+- The next stroke starts at the hook's far tip, so the corner there is intentional, not a join to smooth
+  away (`rōt`, `rōd`); the scans show the same sharp turn.
 
 The scans (p50, p64, p51, p65) fix the orientation; the renderer exposes it in `Placement` so feedback can
 say “the hook opens upward.”

@@ -466,7 +466,9 @@ function placeOrnament(id, pen, prevId, nextId, track, index, total, word, loopD
       ? scale(n, side)
       : joinDir
         ? loopSide(prevDir, joinDir)
-        : prevDir || { x: 1, y: 0 };
+        // A vowel after the w oo-hook nests under the hook rather than perching
+        // to its right (Ann p68 §97, "way").
+        : prevDir || (prevUnit?.id === "w" ? { x: 0, y: 1 } : { x: 1, y: 0 });
 
   if (isGlide(id)) {
     const unit = UNIT_BY_ID[id];
@@ -478,6 +480,13 @@ function placeOrnament(id, pen, prevId, nextId, track, index, total, word, loopD
       // its final position rather than under the pen.
       placements.push({ ...placement, rule: "medial", note: "Medial w is a dash beneath the following vowel." });
       return { segments, placements, dash: glyph.length };
+    }
+    if (glyph.type === "half-ellipse") {
+      // Ann p68 §97: w is the oo-hook, so "we" is oo-hook + e circle.
+      const placed = halfEllipsePath(pen, glyph);
+      segments.push(makeSegment(id, "hook", true, placed.d, placed.points));
+      placements.push(placement);
+      return { segments, placements, end: placed.end };
     }
     if (glyph.type === "ellipse") {
       const placed = tangentEllipsePath(pen, scale(n, side), glyph.rx, glyph.ry);
