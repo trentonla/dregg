@@ -36,7 +36,9 @@ Printed page numbers are in the page header. Chapter 1 starts at scan p17 / prin
 | `p56-s-after-r-er.jpg` | 56 | 40 | `s` after a left-motion circle; disjoined `-er`/`-or` |
 | `p64-oo-hook.jpg` | 64 | 47 | ōō-hook sign table: ŭ, ŏŏ, ōō |
 | `p65-oo-hook-drill.jpg` | 65 | 49 | ōō-hook in words: *plus, pull, food, cut, us* |
+| `p68-w.jpg` | 68 | 52 | `w` is the ōō-hook; *we, wave, wall*; the word drill |
 | `p69-w-wh.jpg` | 69 | 53 | Initial/final `w`, `wh`, medial `w` dash, `sw` hook |
+| `p72-y-ng-nk.jpg` | 72 | 56 | `y` circle/loops; `ng`/`nk` signs and word drill |
 | `p89-nt-nd-mt-md.jpg` | 89 | 73 | `-nt`/`-nd` and `-mt`/`-md` upward-curve blends |
 | `p90-ld.jpg` | 90 | 74 | `-ld` upward terminal and blend word drill |
 
