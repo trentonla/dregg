@@ -34,6 +34,7 @@ Printed page numbers are in the page header. Chapter 1 starts at scan p17 / prin
 | `p51-o-hook-drill.jpg` | 51 | 35 | O-hook in words: *auto, hope, show, dog, open* |
 | `p55-r-circle.jpg` | 55 | 39 | Post-vocalic `r` circle and word drill |
 | `p56-s-after-r-er.jpg` | 56 | 40 | `s` after a left-motion circle; disjoined `-er`/`-or` |
+| `p59-ly.jpg` | 59 | 43 | `-ly` circle (*only, lonely, early; dearly, daily, nearly*); `con`/`com`; plural of circle endings |
 | `p64-oo-hook.jpg` | 64 | 47 | ōō-hook sign table: ŭ, ŏŏ, ōō |
 | `p65-oo-hook-drill.jpg` | 65 | 49 | ōō-hook in words: *plus, pull, food, cut, us* |
 | `p68-w.jpg` | 68 | 52 | `w` is the ōō-hook; *we, wave, wall*; the word drill |

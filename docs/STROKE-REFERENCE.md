@@ -23,6 +23,7 @@ clockwise from +x. A “rising” stroke therefore has a negative angle.
 | Long stroke | 2.0 u | Pairs with a short stroke |
 | Large circle | ellipse, r ≈ 0.42 u | Slightly wider than tall |
 | Small circle | ellipse, r ≈ 0.20 u | |
+| `r` circle | ellipse, r ≈ 0.16 u | ≈0.4 of the large circle (scan p55) |
 | Vowel hook | ≈ 0.45 u across | O and U are two orientations |
 | H dot | r ≈ 0.06 u | Filled |
 | Vowel dot mark | r ≈ 0.05 u | Offset below the glyph |
@@ -118,7 +119,7 @@ visual target, not a formula. The golden sheet is the arbiter.
 | --- | --- | --- |
 | `s` | left s, right s, `x` | **Left s** before or after `p`, `b`, `r`, `l`; **left s** after `t`, `d`, `n`, `m`, and `o`; **right s** in all other positions. At the end of or within a word, `/ks/` is `s` modified in slant (the `x` variant). The names are historical; match the chart. `[Ann §49, §57]` |
 | `th` | left-motion, right-motion | **Left-motion** before or after `o`, `r`, `l`; **right-motion** otherwise; **right-motion** when `th` is the only consonant stroke or is combined with `s`. `[Ann §78–79]` |
-| `r` | stroke, post-vocalic circle | **Stroke** when `r` precedes a vowel; **circle** (or loop) when `r` follows a vowel, and for the obscure `ur` sound. `[Ann §71–72]` |
+| `r` | stroke, post-vocalic circle | **Stroke** when `r` precedes a vowel; **circle** (or loop) when `r` follows a vowel, and for the obscure `ur` sound. The circle is ≈0.32 u across, about 0.4 of the `a` circle on scan p55 (*later*, *chapter*). `[Ann §71–72]` |
 | `w` | ōō-hook; medial dash | Initial/final before a vowel; medial as a dash under the following vowel. `qu` = `k` + `w`. After `s` before a circle vowel, the hook is preferred: *swim, sweet, swell*. `[Ann §97–99]` |
 | `y` | small circle; small loop; large loop | Small circle before a hook vowel; **`ye`** is a small loop; **`ya`** is a large loop. `[Ann §104]` |
 | `l` | normal, `ld` variant | Give `l` a swinging upward turn at the finish before `d`: *old, field, child*. `[Ann §136]` |
